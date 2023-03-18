@@ -8,81 +8,90 @@ class UserType(Enum):
 
 
 class User:
-    def __init__(self, type, max_bandwidth, min_bandwidth=0.01, demand=0):
+    def __init__(self, user_type: UserType, max_bandwidth: int, demand: int = 1, min_bandwidth: int = 0) -> None:
         """
-        Initialize a new User object with the specified type, maximum bandwidth, minimum bandwidth, and demand.
-        By default, the minimum bandwidth is set to 0.01 Mbps and the demand is set to 0.
+        Initialize a User object with the given user type, maximum bandwidth, demand, and minimum bandwidth.
 
-        :param type: UserType
-        :param max_bandwidth: float
-        :param min_bandwidth: float
-        :param demand: float
+        Args:
+            user_type (UserType): The type of the user (regular, premium, or enterprise).
+            max_bandwidth (int): The maximum bandwidth that the user is eligible to receive.
+            demand (int, optional): The user's demand for bandwidth. Defaults to 1.
+            min_bandwidth (int, optional): The minimum bandwidth that the user must be allocated. Defaults to 0.
         """
-        self.__type = type
-        self.__min_bandwidth = min_bandwidth
+        self.__user_type = user_type
         self.__max_bandwidth = max_bandwidth
-        self.demand = demand
-        self.bandwidth_allocation = 0
+        self.__demand = demand
+        self.__min_bandwidth = min_bandwidth
+        self.__allocated_bandwidth = 0
+
+    def __str__(self) -> str:
+        """
+        Returns a string representation of the User object.
+
+        Returns:
+            str: A string representation of the User object.
+        """
+        return f"User: Type={self.__user_type}, Demand={self.__demand}, Max Bandwidth={self.__max_bandwidth}, Allocated Bandwidth={self.__allocated_bandwidth}"
 
     @property
-    def type(self) -> UserType:
+    def user_type(self) -> UserType:
         """
-        Get the type of the User.
+        Returns the user's type.
 
-        :return: UserType
+        Returns:
+            UserType: The user's type.
         """
-        return self.__type
-
-    @property
-    def min_bandwidth(self) -> float:
-        """
-        Get the minimum bandwidth required by the User.
-
-        :return: float
-        """
-        return self.__min_bandwidth
-
-    @min_bandwidth.setter
-    def min_bandwidth(self, val: float) -> None:
-        """
-        Set the minimum bandwidth required by the User.
-
-        :param val: float
-        """
-        self.__min_bandwidth = val
+        return self.__user_type
 
     @property
     def max_bandwidth(self) -> int:
         """
-        Get the maximum bandwidth that can be allocated to the User.
+        Returns the user's maximum bandwidth.
 
-        :return: int
+        Returns:
+            int: The user's maximum bandwidth.
         """
         return self.__max_bandwidth
 
-    def allocate_bandwidth(self, available_bandwidth, users):
+    @property
+    def demand(self) -> int:
         """
-        Allocate bandwidth to the user based on their demand and the total demand from all users.
+        Returns the user's demand for bandwidth.
 
-        :param available_bandwidth: float
-        :param users: list of User objects
+        Returns:
+            int: The user's demand for bandwidth.
         """
-        if self.demand == 0:
-            self.bandwidth_allocation = 0
-        else:
-            demand_sum = sum(u.demand for u in users)
-            if demand_sum == 0:
-                self.bandwidth_allocation = self.__min_bandwidth
-            else:
-                allocated_bandwidth = available_bandwidth * (self.demand / demand_sum)
-                self.bandwidth_allocation = max(min(allocated_bandwidth, self.__max_bandwidth), self.__min_bandwidth)
+        return self.__demand
 
-    def __str__(self):
+    @property
+    def min_bandwidth(self) -> int:
         """
-        Return a string representation of the User object.
+        Returns the user's minimum bandwidth.
 
-        :return: str
+        Returns:
+            int: The user's minimum bandwidth.
         """
-        return f"User: type={self.__type}, min bandwidth={self.__min_bandwidth}, max bandwidth={self.__max_bandwidth}, demand={self.demand}, allocated bandwidth={self.bandwidth_allocation}"
+        return self.__min_bandwidth
 
+    @property
+    def allocated_bandwidth(self) -> int:
+        """
+        Returns the user's allocated bandwidth.
 
+        Returns:
+            int: The user's allocated bandwidth.
+        """
+        return self.__allocated_bandwidth
+
+    def set_allocated_bandwidth(self, bandwidth: int) -> None:
+        """
+        Sets the user's allocated bandwidth to the given value.
+
+        If the user has a minimum bandwidth defined, this method ensures that they are not allocated less than that amount.
+
+        Args:
+            bandwidth (int): The bandwidth to allocate to the user.
+        """
+        if self.__min_bandwidth and bandwidth < self.__min_bandwidth:
+            bandwidth = self.__min_bandwidth
+        self.__allocated_bandwidth = bandwidth

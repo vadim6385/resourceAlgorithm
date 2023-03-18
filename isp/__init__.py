@@ -21,3 +21,12 @@ class ISP:
 
         allocated_bandwidth = sum(user.bandwidth_allocation for user in self.users)
 
+        if allocated_bandwidth > self.total_bandwidth:
+            # Reduce allocation for each user by the same factor to meet the total bandwidth limit
+            factor = self.total_bandwidth / allocated_bandwidth
+            for user in self.users:
+                user.bandwidth_allocation *= factor
+
+        def __str__(self):
+            return f"ISP: total bandwidth={self.total_bandwidth}, users={self.users}"
+

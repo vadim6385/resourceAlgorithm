@@ -38,6 +38,8 @@ class ISP:
         # Redistribute remaining bandwidth if any
         if remaining_bandwidth > 0:
             unsatisfied_users = [user for user in users if user.demand > user.bandwidth_allocation]
+            if not unsatisfied_users:
+                return
             self.allocate_bandwidth(unsatisfied_users)
 
     def display_bandwidth_allocation(self):

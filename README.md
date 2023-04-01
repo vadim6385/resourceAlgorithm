@@ -27,9 +27,11 @@ I_i = W_i * B
 a) If D_i <= I_i:
   - Allocate A_i = D_i.
   - Update R = R - A_i.
+
 b) Else:
   - Allocate A_i = min(I_i, R).
   - Update R = R - A_i.
+
 6) If there is remaining bandwidth (R > 0), redistribute it among the customers with unsatisfied demands by repeating steps 4-5.
 
 The Weighted Fair Sharing (WFS) algorithm ensures fairness by considering each customer's weight in the allocation process. It also promotes efficiency by prioritizing customers with higher bandwidth demands and making sure that the available bandwidth is fully utilized. By adapting the weights, the ISP can offer different service levels or prioritize specific customers, ensuring flexibility and control over resource allocation.

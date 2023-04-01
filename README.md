@@ -1,16 +1,35 @@
-# resourceAlgorithm
-Final Project - resource distribution algorithm
+# Final Project - resource distribution algorithm
 
-Formalization:
+Resource allocation is the process of distributing available resources among various entities, such as bandwidth or computational resources, to optimize the overall performance of an Internet Service Provider (ISP). An ISP must allocate resources to its customers while maintaining fairness, minimizing latency, and ensuring efficient resource utilization.
 
-1) Define the set of users or devices that will be accessing the network, denoted as U = {u1, u2, ..., un}.
+Here, we will formalize a resource allocation algorithm for an ISP that manages bandwidth distribution among its customers.
 
-2) Define the total available bandwidth B.
+### Problem Definition:
+Let N be the number of customers, and B be the total bandwidth available. Each customer i has a demand for bandwidth, represented as D_i. The goal is to allocate bandwidth A_i to each customer i such that the following conditions are met:
 
-3) For each user u in U, define a function f(u) that represents the demand for bandwidth by that user. This function should take into account factors such as the user's current level of activity and the type of applications or services they are using.
+1) A_i >= 0 for all i (bandwidth allocation must be non-negative).
+2) The total allocated bandwidth should not exceed the available bandwidth: Σ A_i <= B.
+3) Fairness: Bandwidth should be allocated fairly among the customers.
+4) Efficiency: The algorithm should minimize the overall latency and maximize resource utilization.
 
-4) Define an allocation function A(u) that maps each user to a portion of the total available bandwidth. This function should be designed to satisfy the demand for bandwidth by each user while also maximizing the overall efficiency of the network.
+### Algorithm: Weighted Fair Sharing (WFS)
 
-5) For each user u in U, compute the allocation of bandwidth A(u) using the allocation function.
+1) Assign each customer i a weight W_i based on their subscription plan or service level agreement (SLA). Higher weights represent higher priority or more expensive plans. Normalize the weights such that Σ W_i = 1.
 
-6) Monitor the usage of the network and adjust the allocation of bandwidth as needed to ensure that all users receive a satisfactory level of service.
+2) Calculate the ideal bandwidth allocation for each customer i as follows:
+I_i = W_i * B
+
+3) Sort the customers in descending order based on their ideal bandwidth allocation I_i.
+
+4) Initialize the remaining bandwidth R = B.
+
+5) For each customer i in the sorted list, do the following:
+a) If D_i <= I_i:
+  - Allocate A_i = D_i.
+  - Update R = R - A_i.
+b) Else:
+  - Allocate A_i = min(I_i, R).
+  - Update R = R - A_i.
+6) If there is remaining bandwidth (R > 0), redistribute it among the customers with unsatisfied demands by repeating steps 4-5.
+
+The Weighted Fair Sharing (WFS) algorithm ensures fairness by considering each customer's weight in the allocation process. It also promotes efficiency by prioritizing customers with higher bandwidth demands and making sure that the available bandwidth is fully utilized. By adapting the weights, the ISP can offer different service levels or prioritize specific customers, ensuring flexibility and control over resource allocation.

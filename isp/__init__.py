@@ -35,9 +35,20 @@ class ISP:
 
             remaining_bandwidth -= user.bandwidth_allocation
 
-        # Redistribute remaining bandwidth if any
-        sum_extra = 0
+        if remaining_bandwidth <= 0:
+            return
+
+        # If there are unsatisfied users, distribute remaining bandwidth between them
         while remaining_bandwidth > 0:
+            unsatisfied_users = [user for user in users if user.demand > user.bandwidth_allocation]
+            if not unsatisfied_users:
+                break
+            self.allocate_bandwidth(unsatisfied_users)
+
+
+        # Redistribute remaining bandwidth between existing users
+        sum_extra = 0
+        while remaining_bandwidth > 0.01: # allow 0.01 mpbs tolerance to speed up the process
             for user in users:
                 extra_allocation = user.weight * remaining_bandwidth
                 sum_extra += extra_allocation

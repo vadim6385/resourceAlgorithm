@@ -24,11 +24,12 @@ I_i = W_i * B
 4) Initialize the remaining bandwidth R = B.
 
 5) For each customer i in the sorted list, do the following:
-a) If D_i <= I_i:
+
+a. If D_i <= I_i:
   - Allocate A_i = D_i.
   - Update R = R - A_i.
 
-b) Else:
+b. Else:
   - Allocate A_i = min(I_i, R).
   - Update R = R - A_i.
 

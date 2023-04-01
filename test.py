@@ -1,37 +1,18 @@
-# Create some users with different demands and priorities
 from isp import ISP
-from user import User, UserType
+from user import UserType, User
 
-user1 = User(UserType.REGULAR, 10)
-user2 = User(UserType.PREMIUM, 20)
-user3 = User(UserType.ENTERPRISE, 30)
+# Create some User objects
+user1 = User(UserType.REGULAR, 2, demand=1)
+user2 = User(UserType.PREMIUM, 10, demand=2)
+user3 = User(UserType.ENTERPRISE, 50, min_bandwidth=10, demand=10)
+user4 = User(UserType.REGULAR, 5, demand=5)
 
-# Set minimum bandwidths for users 1 and 2
-# user1.min_bandwidth = 2
-# user2.min_bandwidth = 5
-
-# Add the users to an ISP object
-isp = ISP(100)
-isp.add_user(user1)
-isp.add_user(user2)
-isp.add_user(user3)
+# Create an ISP object and add the users to it
+isp = ISP(15, [user1, user2, user3, user4])
 
 # Allocate bandwidth to the users
 isp.allocate_bandwidth()
 
 # Print the allocated bandwidth for each user
-print(f"User 1: Allocated Bandwidth={user1.allocated_bandwidth}")
-print(f"User 2: Allocated Bandwidth={user2.allocated_bandwidth}")
-print(f"User 3: Allocated Bandwidth={user3.allocated_bandwidth}")
-
-# Allocate more bandwidth to the ISP and reallocate the bandwidth to the users
-isp = ISP(150)
-isp.add_user(user1)
-isp.add_user(user2)
-isp.add_user(user3)
-isp.allocate_bandwidth()
-
-# Print the allocated bandwidth for each user again
-print(f"User 1: Allocated Bandwidth={user1.allocated_bandwidth}")
-print(f"User 2: Allocated Bandwidth={user2.allocated_bandwidth}")
-print(f"User 3: Allocated Bandwidth={user3.allocated_bandwidth}")
+for user in isp.users:
+    print(user)

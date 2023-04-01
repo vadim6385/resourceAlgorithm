@@ -36,10 +36,13 @@ class ISP:
             remaining_bandwidth -= user.bandwidth_allocation
 
         # Redistribute remaining bandwidth if any
-        if remaining_bandwidth > 0:
+        sum_extra = 0
+        while remaining_bandwidth > 0:
             for user in users:
                 extra_allocation = user.weight * remaining_bandwidth
+                sum_extra += extra_allocation
                 user.bandwidth_allocation += extra_allocation
+            remaining_bandwidth -= sum_extra
 
     def display_bandwidth_allocation(self):
         for user in self.users:

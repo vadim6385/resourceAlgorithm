@@ -29,18 +29,17 @@ class ISP:
 
         for user in users:
             if user.demand <= user.ideal_bandwidth:
-                user.bandwidth_allocation = user.demand
+                user.bandwidth_allocation = max(user.demand, user.min_bandwidth)
             else:
-                user.bandwidth_allocation = min(user.ideal_bandwidth, remaining_bandwidth)
+                user.bandwidth_allocation = max(min(user.ideal_bandwidth, remaining_bandwidth), user.min_bandwidth)
 
             remaining_bandwidth -= user.bandwidth_allocation
 
         # Redistribute remaining bandwidth if any
         if remaining_bandwidth > 0:
-            unsatisfied_users = [user for user in users if user.demand > user.bandwidth_allocation]
-            if not unsatisfied_users:
-                return
-            self.allocate_bandwidth(unsatisfied_users)
+            for user in users:
+                extra_allocation = user.weight * remaining_bandwidth
+                user.bandwidth_allocation += extra_allocation
 
     def display_bandwidth_allocation(self):
         for user in self.users:

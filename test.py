@@ -6,9 +6,9 @@ def main():
     total_bandwidth = 1000  # in Mbps
 
     users = [
-        User(UserType.REGULAR, demand=100, weight=1),
-        User(UserType.PREMIUM, demand=250, weight=2),
-        User(UserType.ENTERPRISE, demand=500, weight=4),
+        User(UserType.REGULAR, demand=100),
+        User(UserType.PREMIUM, demand=250),
+        User(UserType.ENTERPRISE, demand=500, min_bandwidth=50),
     ]
 
     isp = ISP(users, total_bandwidth)
@@ -18,3 +18,4 @@ def main():
 
 if __name__ == "__main__":
     main()
+

@@ -7,7 +7,11 @@ def main():
 
     users = [
         User(UserType.REGULAR, demand=100),
+        User(UserType.REGULAR, demand=100),
+        User(UserType.REGULAR, demand=100),
         User(UserType.PREMIUM, demand=250),
+        User(UserType.PREMIUM, demand=250),
+        User(UserType.ENTERPRISE, demand=500, min_bandwidth=50),
         User(UserType.ENTERPRISE, demand=500, min_bandwidth=50),
     ]
 

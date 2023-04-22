@@ -8,7 +8,7 @@ class UserType(IntEnum):
 
 
 class User:
-    def __init__(self, user_type, demand, start_time, end_time, min_bandwidth=None):
+    def __init__(self, user_type, demand, start_time, end_time, min_bandwidth=0):
         """
         Initialize a new User object with the specified type, demand, start time, end time, and minimum bandwidth.
 
@@ -23,7 +23,7 @@ class User:
         self.weight = int(user_type)
         self.start_time = start_time
         self.end_time = end_time
-        self.min_bandwidth = min_bandwidth if user_type == UserType.ENTERPRISE and min_bandwidth is not None else 0
+        self.min_bandwidth = min_bandwidth if user_type == UserType.ENTERPRISE and min_bandwidth != 0 else 0
         self.bandwidth_allocation = 0
 
     def __str__(self):

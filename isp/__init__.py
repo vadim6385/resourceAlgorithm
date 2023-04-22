@@ -9,25 +9,31 @@ class ISP:
         self.users = users
         self.total_bandwidth = total_bandwidth
 
-    def allocate_bandwidth(self, users=None):
+    def allocate_bandwidth(self, time_window, users=None):
         if users is None:
             users = self.users
 
-        # Normalize weights
-        weight_sum = sum(u.weight for u in users)
-        for user in users:
+        active_users = [user for user in users if user.start_time <= time_window <= user.end_time]
+
+        if not active_users:
+            print(f"No active users during time window: {time_window}")
+            return
+
+        # Normalize weights for active users
+        weight_sum = sum(u.weight for u in active_users)
+        for user in active_users:
             user.weight /= weight_sum
 
-        # Calculate ideal bandwidth allocations
-        for user in users:
+        # Calculate ideal bandwidth allocations for active users
+        for user in active_users:
             user.ideal_bandwidth = user.weight * self.total_bandwidth
 
         # Sort users by descending ideal bandwidth
-        users.sort(key=lambda u: u.ideal_bandwidth, reverse=True)
+        active_users.sort(key=lambda u: u.ideal_bandwidth, reverse=True)
 
         remaining_bandwidth = self.total_bandwidth
 
-        for user in users:
+        for user in active_users:
             if user.demand <= user.ideal_bandwidth:
                 user.bandwidth_allocation = max(user.demand, user.min_bandwidth)
             else:
@@ -40,16 +46,16 @@ class ISP:
 
         # If there are unsatisfied users, distribute remaining bandwidth between them
         while remaining_bandwidth > 0:
-            unsatisfied_users = [user for user in users if user.demand > user.bandwidth_allocation]
+            unsatisfied_users = [user for user in active_users if user.demand > user.bandwidth_allocation]
             if not unsatisfied_users:
                 break
-            self.allocate_bandwidth(unsatisfied_users)
+            self.allocate_bandwidth(time_window=time_window, users=unsatisfied_users)
 
 
         # Redistribute remaining bandwidth between existing users
         sum_extra = 0
         while remaining_bandwidth > 0.01: # allow 0.01 mpbs tolerance to speed up the process
-            for user in users:
+            for user in active_users:
                 extra_allocation = user.weight * remaining_bandwidth
                 sum_extra += extra_allocation
                 user.bandwidth_allocation += extra_allocation

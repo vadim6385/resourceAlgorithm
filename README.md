@@ -12,27 +12,21 @@ Let N be the number of customers, and B be the total bandwidth available. Each c
 3) Fairness: Bandwidth should be allocated fairly among the customers.
 4) Efficiency: The algorithm should minimize the overall latency and maximize resource utilization.
 
-### Algorithm: Weighted Fair Sharing (WFS)
+### Algorithm: box allocation in frames model
 
-1) Assign each customer i a weight W_i based on their subscription plan or service level agreement (SLA). Higher weights represent higher priority or more expensive plans. Normalize the weights such that Σ W_i = 1.
-
-2) Calculate the ideal bandwidth allocation for each customer i as follows:
-I_i = W_i * B
-
-3) Sort the customers in descending order based on their ideal bandwidth allocation I_i.
-
-4) Initialize the remaining bandwidth R = B.
-
-5) For each customer i in the sorted list, do the following:
-
-a. If D_i <= I_i:
-  - Allocate A_i = D_i.
-  - Update R = R - A_i.
-
-b. Else:
-  - Allocate A_i = min(I_i, R).
-  - Update R = R - A_i.
-
-6) If there is remaining bandwidth (R > 0), redistribute it among the customers with unsatisfied demands by repeating steps 4-5.
-
-The Weighted Fair Sharing (WFS) algorithm ensures fairness by considering each customer's weight in the allocation process. It also promotes efficiency by prioritizing customers with higher bandwidth demands and making sure that the available bandwidth is fully utilized. By adapting the weights, the ISP can offer different service levels or prioritize specific customers, ensuring flexibility and control over resource allocation.
+Initialize the ISP with a list of users and the total bandwidth available.
+For each time window, allocate the bandwidth as follows:
+2.1. Filter the users to get the active users in the given time window.
+2.2. If there are no active users, print a message and return.
+2.3. Sort the active users in descending order based on their UserType and demand.
+2.4. Set the remaining bandwidth to the total bandwidth.
+2.5. Calculate the sum of minimum bandwidths for all active users.
+2.6. If the sum of minimum bandwidths is greater than or equal to the remaining bandwidth, allocate the minimum bandwidth to each user and return.
+2.7. For each active user, do the following:
+2.7.1. Calculate the ideal bandwidth for the user based on their demand and the remaining bandwidth.
+2.7.2. Allocate the bandwidth to the user, ensuring it is between their minimum bandwidth and their demand.
+2.7.3. Update the remaining bandwidth.
+2.8. If the remaining bandwidth is less than or equal to the minimum remaining bandwidth tolerance, return.
+2.9. Filter the active users to get the unsatisfied users.
+2.10. If there are unsatisfied users, repeat the allocation process (steps 2.7-2.9) using only the unsatisfied users.
+Display the final bandwidth allocation for each user.

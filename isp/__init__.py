@@ -34,8 +34,6 @@ class ISP:
         # Sort users by descending ideal bandwidth
         active_users.sort(key=lambda u: u.ideal_bandwidth, reverse=True)
 
-        self.remaining_bandwidth = self.total_bandwidth
-
         for user in active_users:
             if user.demand <= user.ideal_bandwidth:
                 user.bandwidth_allocation = max(user.demand, user.min_bandwidth)

@@ -1,16 +1,10 @@
-MIN_REMAINING_BANDWIDTH = 0.01 # allow 0.01 mpbs tolerance to speed up the process and avoid endless loops
+MIN_REMAINING_BANDWIDTH = 0.01  # allow 0.01 Mbps tolerance to speed up the process and avoid endless loops
+
 
 class ISP:
     def __init__(self, users, total_bandwidth):
-        """
-        Initialize a new ISP object with the specified users and total bandwidth.
-
-        :param users: list of User objects
-        :param total_bandwidth: float
-        """
         self.users = users
         self.total_bandwidth = total_bandwidth
-        self.remaining_bandwidth = self.total_bandwidth
 
     def allocate_bandwidth(self, time_window, users=None):
         if users is None:
@@ -22,52 +16,32 @@ class ISP:
             print(f"No active users during time window: {time_window}")
             return
 
-        # Normalize weights for active users
-        weight_sum = sum(u.weight for u in active_users)
-        for user in active_users:
-            user.weight /= weight_sum
+        # Sort users by descending UserType and demand
+        active_users.sort(key=lambda u: (int(u.user_type), u.demand), reverse=True)
 
-        # Calculate ideal bandwidth allocations for active users
-        for user in active_users:
-            user.ideal_bandwidth = min(user.weight * self.total_bandwidth, user.demand)
+        remaining_bandwidth = self.total_bandwidth
+        min_bandwidth_sum = sum(u.min_bandwidth for u in active_users)
 
-        # Sort users by descending ideal bandwidth
-        active_users.sort(key=lambda u: u.ideal_bandwidth, reverse=True)
-
-        for user in active_users:
-            if user.demand <= user.ideal_bandwidth:
-                user.bandwidth_allocation = max(user.demand, user.min_bandwidth)
-            else:
-                user.bandwidth_allocation = max(min(user.ideal_bandwidth, self.remaining_bandwidth), user.min_bandwidth)
-
-            self.remaining_bandwidth -= user.bandwidth_allocation
-
-        if self.remaining_bandwidth <= MIN_REMAINING_BANDWIDTH:
+        if min_bandwidth_sum >= remaining_bandwidth:
+            for user in active_users:
+                user.bandwidth_allocation = user.min_bandwidth
             return
+
+        for user in active_users:
+            ideal_bandwidth = remaining_bandwidth * user.demand / sum(u.demand for u in active_users)
+            user.bandwidth_allocation = max(min(ideal_bandwidth, user.demand), user.min_bandwidth)
+            remaining_bandwidth -= user.bandwidth_allocation
 
         # check if all users got their demand, if yes, quit:
         if self.check_demand_satisfied(active_users):
             return
 
-        # If there are unsatisfied users, distribute remaining bandwidth between them
-        while self.remaining_bandwidth > MIN_REMAINING_BANDWIDTH:
-            unsatisfied_users = [user for user in active_users if user.demand > user.bandwidth_allocation]
-            if not unsatisfied_users:
-                break
-            self.allocate_bandwidth(time_window=time_window, users=unsatisfied_users)
+        if remaining_bandwidth <= MIN_REMAINING_BANDWIDTH:
+            return
 
-        # Redistribute remaining bandwidth between existing users
-        sum_extra = 0
-        while self.remaining_bandwidth > MIN_REMAINING_BANDWIDTH:
-            if self.check_demand_satisfied(active_users):
-                break
-            for user in active_users:
-                if user.bandwidth_allocation >= user.demand:
-                    continue
-                extra_allocation = user.weight * self.remaining_bandwidth
-                sum_extra += extra_allocation
-                user.bandwidth_allocation += extra_allocation
-            self.remaining_bandwidth -= sum_extra
+        unsatisfied_users = [user for user in active_users if user.demand > user.bandwidth_allocation]
+        if unsatisfied_users:
+            self.allocate_bandwidth(time_window, users=unsatisfied_users)
 
     def display_bandwidth_allocation(self):
         for user in self.users:

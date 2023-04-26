@@ -1,11 +1,13 @@
+import numpy as np
+
 DEFAULT_END_TIME = 0xFF
-DEFAULT_MATRIX_END_TIME = 0xFFF
+DEFAULT_MATRIX_END_TIME = 1000
 
 class TaskMatrix:
     def __init__(self, max_bandwidth, end_time=DEFAULT_MATRIX_END_TIME):
         self.__max_bandwidth = max_bandwidth
         self.__end_time = end_time
-        self.__matrix = self.__zeros(self.__max_bandwidth, self.__end_time)
+        self.__matrix = np.zeros((self.__max_bandwidth, self.__end_time), dtype=int)
 
     @property
     def data(self):

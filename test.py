@@ -1,6 +1,5 @@
 import random
 from collections import deque
-import numpy as np
 import seaborn as sns
 import matplotlib.pylab as plt
 
@@ -27,8 +26,10 @@ def generate_random_tasks(num_tasks, max_bandwidth, start_time=0, end_time=DEFAU
 
 
 def show_plot(task_matrix):
-    tm_arr = np.array(task_matrix)
-    ax = sns.heatmap(tm_arr, linewidths=0.5)
+    ax = sns.heatmap(task_matrix, cmap="YlGnBu")
+    plt.title("Task allocation graph", fontsize=20)
+    plt.xlabel("t(sec)")
+    plt.ylabel("Bandwith(Mbps")
     plt.show()
 
 

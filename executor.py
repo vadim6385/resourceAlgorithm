@@ -1,17 +1,7 @@
 from collections import deque
-from operator import attrgetter
 
 from taskmatrix import TaskMatrix, DEFAULT_END_TIME
-
-
-def sort_queue(Q, attrib):
-    """
-    sort deque by attribute
-    :param Q: deque to sort
-    :param attrib: deque sort by attribute
-    :return: sorted deque
-    """
-    return deque(sorted(Q, key=attrgetter(attrib)))
+from utils import sort_queue
 
 
 class Executor:

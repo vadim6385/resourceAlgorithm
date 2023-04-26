@@ -1,11 +1,15 @@
 DEFAULT_END_TIME = 0xFF
-DEFAULT_MATRIX_END_TIME = 0xFFFF
+DEFAULT_MATRIX_END_TIME = 0xFFF
 
 class TaskMatrix:
     def __init__(self, max_bandwidth, end_time=DEFAULT_MATRIX_END_TIME):
         self.__max_bandwidth = max_bandwidth
         self.__end_time = end_time
         self.__matrix = self.__zeros(self.__max_bandwidth, self.__end_time)
+
+    @property
+    def data(self):
+        return self.__matrix
 
     def __zeros(self, rows, cols):
         return [[0 for col in range(cols)] for row in range(rows)]

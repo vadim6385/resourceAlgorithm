@@ -1,5 +1,8 @@
 import random
 from collections import deque
+import numpy as np
+import seaborn as sns
+import matplotlib.pylab as plt
 
 from task import Task, TaskPriority
 from taskmatrix import DEFAULT_END_TIME
@@ -23,6 +26,12 @@ def generate_random_tasks(num_tasks, max_bandwidth, start_time=0, end_time=DEFAU
     return ret
 
 
+def show_plot(task_matrix):
+    tm_arr = np.array(task_matrix)
+    ax = sns.heatmap(tm_arr, linewidths=0.5)
+    plt.show()
+
+
 def main():
     max_bandwidth = 100
     start_time = 0
@@ -33,6 +42,8 @@ def main():
         task = task_generated_queue.popleft()
         task_exec.add_tasks(task)
     task_exec.execute_tasks()
+    show_plot(task_exec.task_matrix.data)
+
 
 if __name__ == "__main__":
     main()

@@ -45,7 +45,7 @@ def main():
     task_generated_queue = generate_random_tasks(num_tasks=num_tasks, max_bandwidth=max_bandwidth)
     while task_generated_queue:
         task = task_generated_queue.popleft()
-        task_exec.add_tasks(task)
+        task_exec.add_task(task)
     task_exec.execute_tasks()
     show_plot(task_exec.task_matrix.data)
 

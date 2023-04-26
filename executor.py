@@ -52,25 +52,28 @@ class Executor:
         """
         return self.__task_matrix
 
-    def add_tasks(self, *tasks):
+    def add_task(self, task):
         """
         add tasks to submission queue,
         create subqueues by time and priority
-        :param tasks: tasks to add
+        :param task: task to add
         :return: None
         """
-        # append tasks to queues by time
-        for one_task in tasks:
-            try:
-                time_deque = self.__submission_queue_dict[one_task.created_time]
-            except KeyError:
-                self.__submission_queue_dict[one_task.created_time] = deque()
-                time_deque = self.__submission_queue_dict[one_task.created_time]
-            time_deque.append(one_task)
-        # after appending, sort queues by priority and add them to submission queue
-        for one_time in self.__submission_queue_dict.keys():
-            sorted_q = sort_queue(self.__submission_queue_dict[one_time], "priority", True)
-            self.__submission_queue_dict[one_time] = sorted_q
+        # append task to queues by time
+        task_start_time = task.actual_start_time
+        try:
+            time_deque = self.__submission_queue_dict[task_start_time]
+        except KeyError:
+            self.__submission_queue_dict[task_start_time] = deque()
+            time_deque = self.__submission_queue_dict[task_start_time]
+        time_deque.append(task)
+        # after appending, sort queue by priority and add them to submission queue
+        sorted_q = sort_queue(self.__submission_queue_dict[task_start_time], "priority", True)
+        self.__submission_queue_dict[task_start_time] = sorted_q
+        # time_list = sorted(self.__submission_queue_dict.keys())
+        # for one_time in time_list:
+        #     sorted_q = sort_queue(self.__submission_queue_dict[one_time], "priority", True)
+        #     self.__submission_queue_dict[one_time] = sorted_q
 
     def add_task_to_exec_matrix(self, task):
         """
@@ -85,14 +88,14 @@ class Executor:
             # increase task time and priority, return task to submission queue
             # task.priority += 1
             task.actual_start_time += 1
-            self.add_tasks(task)
+            self.add_task(task)
 
     def execute_tasks(self, start_time=0, end_time=DEFAULT_END_TIME, step=1):
         """
-        Execute tasks between a given start and end time.
-        @param start_time: start time for executing tasks, default is 0
+        Execute task between a given start and end time.
+        @param start_time: start time for executing task, default is 0
         @type start_time: int
-        @param end_time: end time for executing tasks, default is DEFAULT_END_TIME
+        @param end_time: end time for executing task, default is DEFAULT_END_TIME
         @type end_time: int
         @param step: step size for iterating through time, default is 1
         @type step: int

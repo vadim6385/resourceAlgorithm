@@ -1,20 +1,20 @@
 """
-This module defines a TaskMatrix class that helps manage tasks and their bandwidth allocation.
+This module defines a TaskMatrix class that helps manage task and their bandwidth allocation.
 """
 
 import numpy as np
 
 # Constants for default end time values
 DEFAULT_END_TIME = 0xFF
-DEFAULT_MATRIX_END_TIME = 1000
+DEFAULT_MATRIX_END_TIME = 0x200
 
 
 class TaskMatrix:
     """
-    A class representing a matrix of tasks and their bandwidth allocation.
+    A class representing a matrix of task and their bandwidth allocation.
     """
 
-    def __init__(self, max_bandwidth, end_time=DEFAULT_END_TIME):
+    def __init__(self, max_bandwidth, end_time=DEFAULT_MATRIX_END_TIME):
         """
         Initialize the TaskMatrix.
 

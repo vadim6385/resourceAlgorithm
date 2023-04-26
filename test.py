@@ -1,3 +1,7 @@
+"""
+Driver code
+"""
+
 import random
 from collections import deque
 import seaborn as sns

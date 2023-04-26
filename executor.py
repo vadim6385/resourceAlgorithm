@@ -1,6 +1,7 @@
 from collections import deque
 from operator import attrgetter
 
+from taskmatrix import TaskMatrix, DEFAULT_END_TIME
 
 
 def sort_queue(Q, attrib):
@@ -13,15 +14,12 @@ def sort_queue(Q, attrib):
     return deque(sorted(Q, key=attrgetter(attrib)))
 
 
-
-
-
 class Executor:
-    def __init__(self, max_bandwidth, start_time=0, end_time=DEFAULT_END_TIME):
+    def __init__(self, max_bandwidth, start_time=0):
         self.__max_bandwidth = max_bandwidth
         self.__start_time = start_time
         self.__submission_queue_dict = {}  # list of submission queues by time
-        self.__execution_matrix = zeros(max_bandwidth, end_time)
+        self.__task_matrix = TaskMatrix(self.__max_bandwidth)
         self.__current_time = self.__start_time
 
     @property
@@ -64,8 +62,13 @@ class Executor:
             self.__submission_queue_dict[one_time] = sorted_q
 
     def add_task_to_exec_matrix(self, task):
-        id = task.id
-
+        if self.__task_matrix.add_task(task):  # task added successfully
+            return
+        else:
+            # increase task time and priority, return task to submission queue
+            task.priority += 1
+            task.start_time += 1
+            self.add_tasks(task)
 
     def execute_tasks(self, start_time=0, end_time=DEFAULT_END_TIME, step=1):
         for i in range(start_time, end_time, step):
@@ -73,7 +76,7 @@ class Executor:
                 one_time_task_queue = self.__submission_queue_dict[i]
                 while one_time_task_queue:
                     task = one_time_task_queue.pop()
-
-
-
-
+                    self.add_task_to_exec_matrix(task)
+            except KeyError:
+                pass
+        print(self.__task_matrix)

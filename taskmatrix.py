@@ -1,6 +1,4 @@
-
 DEFAULT_END_TIME = 0xFF
-
 
 
 class TaskMatrix:
@@ -29,9 +27,13 @@ class TaskMatrix:
             return False
         task_id = task.id
         end_time = start_time + task.duration
-        for i in free_rows_list: # matrix rows
-            for j in range(start_time, end_time+1): # matrix columns
+        # "paint" the appropriate places in task matrix with task id number
+        for i in free_rows_list:  # matrix rows
+            for j in range(start_time, end_time + 1):  # matrix columns
                 self.__matrix[i][j] = task_id
+            bandwidth -= 1
+            if bandwidth <= 0:
+                break
         return True
 
     def __repr__(self):

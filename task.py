@@ -3,14 +3,25 @@ The class represents a task with attributes for bandwidth, start time, duration,
 It includes getter and setter methods to access and modify these attributes.
 """
 
+from itertools import count
+
 
 class Task:
+    # create counter object for generating task id
+    id_iter = count(start=1, step=1)
+
     # Initialize Task object with bandwidth, start_time, duration, and priority
     def __init__(self, bandwidth, start_time, duration, priority):
+        self.__id = next(self.id_iter)
         self.__bandwidth = bandwidth
         self.__start_time = start_time
         self.__duration = duration
         self.__priority = priority
+
+    # get unique task Id
+    @property
+    def id(self):
+        return self.__id
 
     # Get bandwidth of the task
     @property

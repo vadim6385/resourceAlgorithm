@@ -2,6 +2,7 @@ from collections import deque
 from operator import attrgetter
 
 
+
 def sort_queue(Q, attrib):
     """
     sort deque by attribute
@@ -12,17 +13,20 @@ def sort_queue(Q, attrib):
     return deque(sorted(Q, key=attrgetter(attrib)))
 
 
+
+
+
 class Executor:
-    def __init__(self, bandwidth, start_time=0):
-        self.__bandwidth = bandwidth
+    def __init__(self, max_bandwidth, start_time=0, end_time=DEFAULT_END_TIME):
+        self.__max_bandwidth = max_bandwidth
         self.__start_time = start_time
         self.__submission_queue_dict = {}  # list of submission queues by time
-        self.__execution_queue_list = []  # list of execution queues by time
+        self.__execution_matrix = zeros(max_bandwidth, end_time)
         self.__current_time = self.__start_time
 
     @property
-    def bandwidth(self):
-        return self.__bandwidth
+    def max_bandwidth(self):
+        return self.__max_bandwidth
 
     @property
     def start_time(self):
@@ -59,11 +63,17 @@ class Executor:
             sorted_q = sort_queue(self.__submission_queue_dict[one_time], "priority")
             self.__submission_queue_dict[one_time] = sorted_q
 
-    def execute_tasks(self, start_time=0, end_time=0xFFFF, step=1):
+    def add_task_to_exec_matrix(self, task):
+        id = task.id
+
+
+    def execute_tasks(self, start_time=0, end_time=DEFAULT_END_TIME, step=1):
         for i in range(start_time, end_time, step):
             try:
                 one_time_task_queue = self.__submission_queue_dict[i]
                 while one_time_task_queue:
                     task = one_time_task_queue.pop()
+
+
 
 

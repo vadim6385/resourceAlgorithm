@@ -20,7 +20,6 @@ class Executor:
         self.__start_time = start_time
         self.__submission_queue_dict = {}  # list of submission queues by time
         self.__task_matrix = TaskMatrix(self.__max_bandwidth)
-        self.__current_time = self.__start_time
 
     @property
     def max_bandwidth(self):
@@ -31,15 +30,8 @@ class Executor:
         return self.__start_time
 
     @property
-    def current_time(self):
-        return self.__current_time
-
-    @current_time.setter
-    def current_time(self, val):
-        self.__current_time = val
-
-    def advance_time(self):
-        self.__current_time += 1
+    def task_matrix(self):
+        return self.__task_matrix
 
     def add_tasks(self, *tasks):
         """

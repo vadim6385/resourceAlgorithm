@@ -1,8 +1,8 @@
 DEFAULT_END_TIME = 0xFF
-
+DEFAULT_MATRIX_END_TIME = 0xFFFF
 
 class TaskMatrix:
-    def __init__(self, max_bandwidth, end_time=DEFAULT_END_TIME):
+    def __init__(self, max_bandwidth, end_time=DEFAULT_MATRIX_END_TIME):
         self.__max_bandwidth = max_bandwidth
         self.__end_time = end_time
         self.__matrix = self.__zeros(self.__max_bandwidth, self.__end_time)
@@ -14,7 +14,7 @@ class TaskMatrix:
         cnt = 0
         rows_list = []
         for i in range(self.__max_bandwidth):
-            if self.__max_bandwidth[time_stamp][i] == 0:
+            if self.__matrix[i][time_stamp] == 0:
                 cnt += 1
                 rows_list.append(i)
         return cnt, rows_list
@@ -29,7 +29,7 @@ class TaskMatrix:
         end_time = start_time + task.duration
         # "paint" the appropriate places in task matrix with task id number
         for i in free_rows_list:  # matrix rows
-            for j in range(start_time, end_time + 1):  # matrix columns
+            for j in range(start_time, end_time):  # matrix columns
                 self.__matrix[i][j] = task_id
             bandwidth -= 1
             if bandwidth <= 0:

@@ -70,10 +70,6 @@ class Executor:
         # after appending, sort queue by priority and add them to submission queue
         sorted_q = sort_queue(self.__submission_queue_dict[task_start_time], "priority", True)
         self.__submission_queue_dict[task_start_time] = sorted_q
-        # time_list = sorted(self.__submission_queue_dict.keys())
-        # for one_time in time_list:
-        #     sorted_q = sort_queue(self.__submission_queue_dict[one_time], "priority", True)
-        #     self.__submission_queue_dict[one_time] = sorted_q
 
     def add_task_to_exec_matrix(self, task):
         """
@@ -85,8 +81,7 @@ class Executor:
         if self.__task_matrix.add_task(task):  # task added successfully
             return
         else:
-            # increase task time and priority, return task to submission queue
-            # task.priority += 1
+            # increase task time, return task to submission queue
             task.actual_start_time += 1
             self.add_task(task)
 
@@ -109,4 +104,3 @@ class Executor:
                     self.add_task_to_exec_matrix(task)
             except KeyError:
                 pass
-        # print(self.__task_matrix)

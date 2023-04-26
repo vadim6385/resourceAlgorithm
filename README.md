@@ -12,27 +12,38 @@ Let N be the number of customers, and B be the total bandwidth available. Each c
 3) Fairness: Bandwidth should be allocated fairly among the customers.
 4) Efficiency: The algorithm should minimize the overall latency and maximize resource utilization.
 
-### Algorithm: Weighted Fair Sharing (WFS)
+### Algorithm:
 
-1) Assign each customer i a weight W_i based on their subscription plan or service level agreement (SLA). Higher weights represent higher priority or more expensive plans. Normalize the weights such that Σ W_i = 1.
+1) Define the Task class
 
-2) Calculate the ideal bandwidth allocation for each customer i as follows:
-I_i = W_i * B
+    1.1 Initialize Task object with bandwidth, start_time, duration, and priority
 
-3) Sort the customers in descending order based on their ideal bandwidth allocation I_i.
+    1.2 Implement getter and setter methods for the task attributes
 
-4) Initialize the remaining bandwidth R = B.
+2) Main algorithm loop 
 
-5) For each customer i in the sorted list, do the following:
+   2.1 While True (or until a stopping condition is met)
+ 
+   2.1.1 Generate tasks with random attributes
 
-a. If D_i <= I_i:
-  - Allocate A_i = D_i.
-  - Update R = R - A_i.
+   2.1.2 Add generated tasks to the task queue
 
-b. Else:
-  - Allocate A_i = min(I_i, R).
-  - Update R = R - A_i.
+   2.1.3 Sort the task queue based on priority and start_time
 
-6) If there is remaining bandwidth (R > 0), redistribute it among the customers with unsatisfied demands by repeating steps 4-5.
+   2.1.4 Initialize available bandwidth with the total bandwidth capacity
 
-The Weighted Fair Sharing (WFS) algorithm ensures fairness by considering each customer's weight in the allocation process. It also promotes efficiency by prioritizing customers with higher bandwidth demands and making sure that the available bandwidth is fully utilized. By adapting the weights, the ISP can offer different service levels or prioritize specific customers, ensuring flexibility and control over resource allocation.
+   2.1.5 Create an empty separate queue
+
+   2.1.6 While the task queue is not empty
+
+   2.1.6.1 Pop a task from the task queue
+
+   2.1.6.2 Check if the task can be executed (its bandwidth requirement is smaller or equal to the available bandwidth)
+
+   2.1.6.2.1 If yes, execute the task and reduce the available bandwidth
+
+   2.1.6.2.2 If no, add the task to the separate queue
+
+   2.1.7 Merge the separate queue back into the task queue
+
+   2.1.8 Increment the time unit

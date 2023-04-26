@@ -18,12 +18,12 @@ def generate_random_tasks(num_tasks, max_bandwidth, start_time=0, end_time=DEFAU
     for i in range(num_tasks):
         task_bandwidth = random.randint(0, int(max_bandwidth/2))
         priority = random.randrange(TaskPriority.REGULAR, TaskPriority.ENTERPRISE + 10, 10)
-        task_start_time = random.randint(start_time, int(end_time-1))
-        max_duration = end_time - task_start_time
+        task_created_time = random.randint(start_time, int(end_time-1))
+        max_duration = end_time - task_created_time
         duration = random.randint(1, max_duration)  # Use max_duration as the upper limit
-        if (task_start_time + duration) > end_time:
+        if (task_created_time + duration) > end_time:
             DEBUG_HALT()
-        new_task = Task(bandwidth=task_bandwidth, start_time=task_start_time,
+        new_task = Task(bandwidth=task_bandwidth, created_time=task_created_time,
                         duration=duration, priority=priority)
         ret.append(new_task)
     return ret

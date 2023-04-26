@@ -14,7 +14,7 @@ class TaskMatrix:
     A class representing a matrix of tasks and their bandwidth allocation.
     """
 
-    def __init__(self, max_bandwidth, end_time=DEFAULT_MATRIX_END_TIME):
+    def __init__(self, max_bandwidth, end_time=DEFAULT_END_TIME):
         """
         Initialize the TaskMatrix.
 
@@ -57,16 +57,15 @@ class TaskMatrix:
     def add_task(self, task):
         """
         Add a task to the TaskMatrix and allocate bandwidth.
-
         @param task: task to be added
         @type task: Task
         @return: True if the task was added, False if not enough bandwidth
         @rtype: bool
         """
-        bandwidth = task.bandwidth
-        start_time = task.start_time
+        bandwidth_counter = task.bandwidth
+        start_time = task.actual_start_time
         free_bandwidth, free_rows_list = self.__get_free_bandwidth_indices_list(start_time)
-        if bandwidth > free_bandwidth:
+        if bandwidth_counter > free_bandwidth:
             return False
         task_id = task.id
         end_time = start_time + task.duration
@@ -74,8 +73,8 @@ class TaskMatrix:
         for i in free_rows_list:  # matrix rows
             for j in range(start_time, end_time):  # matrix columns
                 self.__matrix[i][j] = task_id
-            bandwidth -= 1
-            if bandwidth <= 0:
+            bandwidth_counter -= 1
+            if bandwidth_counter <= 0:
                 break
         return True
 

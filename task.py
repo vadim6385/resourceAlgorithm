@@ -16,11 +16,12 @@ class Task:
     # create counter object for generating task id
     id_iter = count(start=1, step=1)
 
-    # Initialize Task object with bandwidth, start_time, duration, and priority
-    def __init__(self, bandwidth, start_time, duration, priority):
+    # Initialize Task object with bandwidth, created_time, duration, and priority
+    def __init__(self, bandwidth, created_time, duration, priority):
         self.__id = next(self.id_iter)
         self.__bandwidth = bandwidth
-        self.__start_time = start_time
+        self.__created_time = created_time
+        self.__actual_start_time = created_time
         self.__duration = duration
         self.__priority = priority
 
@@ -34,15 +35,18 @@ class Task:
     def bandwidth(self):
         return self.__bandwidth
 
-    # Get start time of the task
+    # Get created time of the task
     @property
-    def start_time(self):
-        return self.__start_time
+    def created_time(self):
+        return self.__created_time
 
-    # Set new start time for the task
-    @start_time.setter
-    def start_time(self, val):
-        self.__start_time = val
+    @property
+    def actual_start_time(self):
+        return self.__actual_start_time
+
+    @actual_start_time.setter
+    def actual_start_time(self, val):
+        self.__actual_start_time = val
 
     # Get duration of the task
     @property
@@ -61,7 +65,8 @@ class Task:
 
     # String representation of the Task object
     def __repr__(self):
-        return "Task(bandwidth={}, start_time={}, duration={}, priority={})".format(self.__bandwidth,
-                                                                                    self.__start_time,
-                                                                                    self.__duration,
-                                                                                    self.__priority)
+        return "Task(id={} bandwidth={}, created_time={}, duration={}, priority={})".format(self.__bandwidth,
+                                                                                            self.__id,
+                                                                                      self.__created_time,
+                                                                                      self.__duration,
+                                                                                      self.__priority)

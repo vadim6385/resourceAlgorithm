@@ -62,10 +62,10 @@ class Executor:
         # append tasks to queues by time
         for one_task in tasks:
             try:
-                time_deque = self.__submission_queue_dict[one_task.start_time]
+                time_deque = self.__submission_queue_dict[one_task.created_time]
             except KeyError:
-                self.__submission_queue_dict[one_task.start_time] = deque()
-                time_deque = self.__submission_queue_dict[one_task.start_time]
+                self.__submission_queue_dict[one_task.created_time] = deque()
+                time_deque = self.__submission_queue_dict[one_task.created_time]
             time_deque.append(one_task)
         # after appending, sort queues by priority and add them to submission queue
         for one_time in self.__submission_queue_dict.keys():
@@ -83,8 +83,8 @@ class Executor:
             return
         else:
             # increase task time and priority, return task to submission queue
-            task.priority += 1
-            task.start_time += 1
+            # task.priority += 1
+            task.actual_start_time += 1
             self.add_tasks(task)
 
     def execute_tasks(self, start_time=0, end_time=DEFAULT_END_TIME, step=1):

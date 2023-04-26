@@ -2,8 +2,14 @@
 The class represents a task with attributes for bandwidth, start time, duration, and priority.
 It includes getter and setter methods to access and modify these attributes.
 """
-
+from enum import IntEnum
 from itertools import count
+
+
+class TaskPriority(IntEnum):
+    REGULAR = 0
+    PREMIUM = 10
+    ENTERPRISE = 20
 
 
 class Task:

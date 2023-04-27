@@ -14,7 +14,7 @@ class TaskMatrix:
     A class representing a matrix of task and their bandwidth allocation.
     """
 
-    def __init__(self, max_bandwidth, end_time=DEFAULT_MATRIX_END_TIME):
+    def __init__(self, max_bandwidth, end_time=DEFAULT_END_TIME):
         """
         Initialize the TaskMatrix.
 
@@ -26,6 +26,7 @@ class TaskMatrix:
         self.__max_bandwidth = max_bandwidth
         self.__end_time = end_time
         self.__matrix = np.zeros((self.__max_bandwidth, self.__end_time), dtype=int)
+        self.__starved_tasks_list = []
 
     @property
     def data(self):
@@ -36,6 +37,10 @@ class TaskMatrix:
         @rtype: numpy.ndarray
         """
         return self.__matrix
+
+    @property
+    def starved_tasks(self):
+        return self.__starved_tasks_list
 
     def __get_free_bandwidth_indices_list(self, time_stamp):
         """
@@ -68,10 +73,14 @@ class TaskMatrix:
         if bandwidth_counter > free_bandwidth:
             return False
         task_id = task.id
-        end_time = start_time + task.duration
+        task_end_time = start_time + task.duration
+        # if task end time is more than allocated time, task is dropped and moved to starved task list
+        if task_end_time > self.__end_time:
+            self.__starved_tasks_list.append(task)
+            return True
         # "paint" the appropriate places in task matrix with task id number
         for i in free_rows_list:  # matrix rows
-            for j in range(start_time, end_time):  # matrix columns
+            for j in range(start_time, task_end_time):  # matrix columns
                 self.__matrix[i][j] = task_id
             bandwidth_counter -= 1
             if bandwidth_counter <= 0:

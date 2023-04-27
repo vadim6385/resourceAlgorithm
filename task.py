@@ -63,10 +63,17 @@ class Task:
     def priority(self, val):
         self.__priority = val
 
+    @property
+    def actual_end_time(self):
+        return self.__actual_start_time + self.__duration
+
     # String representation of the Task object
     def __repr__(self):
-        return "Task(id={} bandwidth={}, created_time={}, duration={}, priority={})".format(self.__bandwidth,
-                                                                                            self.__id,
-                                                                                      self.__created_time,
-                                                                                      self.__duration,
-                                                                                      self.__priority)
+        return "Task(id={} bandwidth={}, created_time={}, actual start time{}, duration={}, actual end time={}, priority={})".format(
+            self.__bandwidth,
+            self.__id,
+            self.__created_time,
+            self.__actual_start_time,
+            self.__duration,
+            self.actual_end_time,
+            self.__priority)

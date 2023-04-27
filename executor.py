@@ -27,6 +27,10 @@ class Executor:
         self.__task_matrix = TaskMatrix(self.__max_bandwidth)
 
     @property
+    def starved_tasks(self):
+        return self.__task_matrix.starved_tasks
+
+    @property
     def max_bandwidth(self):
         """
         Get the maximum bandwidth for the executor.

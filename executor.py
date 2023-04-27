@@ -3,6 +3,7 @@ Task executor class
 """
 
 from collections import deque
+from operator import attrgetter
 
 from taskmatrix import TaskMatrix, DEFAULT_END_TIME
 from utils import sort_queue
@@ -68,8 +69,18 @@ class Executor:
             time_deque = self.__submission_queue_dict[task_start_time]
         time_deque.append(task)
         # after appending, sort queue by priority and add them to submission queue
-        sorted_q = sort_queue(self.__submission_queue_dict[task_start_time], "priority", True)
-        self.__submission_queue_dict[task_start_time] = sorted_q
+        self.__sort_queue(task_start_time)
+
+    def __sort_queue(self, queue_num):
+        """
+        sort queue by priority and original start time
+        :param queue_num: number of queue by actual start time
+        """
+        original_que = self.__submission_queue_dict[queue_num]
+        sorted_que = sorted(original_que, key=attrgetter('created_time')) # sort by created time first (secondary key)
+        sorted_que = sorted(sorted_que, key=attrgetter('priority'), reverse=True) # then sort by priority
+        # sorted_que = sorted(original_que, key= lambda task: (task.priority, task.created_time), reverse=True)
+        self.__submission_queue_dict[queue_num] = sorted_que
 
     def add_task_to_exec_matrix(self, task):
         """

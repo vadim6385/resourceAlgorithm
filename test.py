@@ -17,11 +17,11 @@ def show_plot(task_matrix, dropped_tasks):
     plt.show()
 
 
-def main():
+def main(compress):
     max_bandwidth = 100
     start_time = 0
     num_tasks = 50
-    task_exec = Executor(max_bandwidth, start_time)
+    task_exec = Executor(max_bandwidth, start_time, compress=compress)
     task_generated_list = generate_random_tasks(num_tasks=num_tasks, max_bandwidth=max_bandwidth)
     for task in task_generated_list:
         task_exec.add_task(task)
@@ -31,11 +31,12 @@ def main():
     print("Number of dropped tasks: {}".format(num_dropped_tasks))
     print("Dropped task list:")
     [print(i) for i in task_exec.starved_tasks]
-    show_plot(task_exec.task_matrix.data, num_dropped_tasks)
+    show_plot(task_exec.task_matrix.data_matrix, num_dropped_tasks)
     reset_task_start_time_bandwidth(task_generated_list)
     print(task_generated_list)
 
 
 if __name__ == "__main__":
-    main()
+    main(compress=False)
+    main(compress=True)
 

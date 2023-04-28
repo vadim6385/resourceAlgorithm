@@ -13,7 +13,7 @@ class Executor:
     """
     The Executor class manages the task execution and bandwidth allocation process.
     """
-    def __init__(self, max_bandwidth, start_time=0):
+    def __init__(self, max_bandwidth, start_time=0, compress=False):
         """
         Initialize the Executor.
         @param max_bandwidth: maximum bandwidth for the executor
@@ -24,7 +24,7 @@ class Executor:
         self.__max_bandwidth = max_bandwidth
         self.__start_time = start_time
         self.__submission_queue_dict = {}  # list of submission queues by time
-        self.__task_matrix = TaskInProgressMatrix(self.__max_bandwidth)
+        self.__task_matrix = TaskInProgressMatrix(self.__max_bandwidth, compress=compress)
 
     @property
     def starved_tasks(self):
@@ -86,7 +86,7 @@ class Executor:
         # sorted_que = sorted(original_que, key= lambda task: (task.priority, task.created_time), reverse=True)
         self.__submission_queue_dict[queue_num] = sorted_que
 
-    def add_task_to_exec_matrix(self, task):
+    def __add_task_to_exec_matrix(self, task):
         """
         Add a task to the task execution matrix.
         @param task: task to add
@@ -116,6 +116,6 @@ class Executor:
                 one_time_task_queue = self.__submission_queue_dict[i]
                 while one_time_task_queue:
                     task = one_time_task_queue.pop()
-                    self.add_task_to_exec_matrix(task)
+                    self.__add_task_to_exec_matrix(task)
             except KeyError:
                 pass

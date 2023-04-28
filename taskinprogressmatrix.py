@@ -17,7 +17,7 @@ class TaskInProgressMatrix:
     A class representing a matrix of task and their bandwidth allocation.
     """
 
-    def __init__(self, max_bandwidth, end_time=DEFAULT_END_TIME):
+    def __init__(self, max_bandwidth, end_time=DEFAULT_END_TIME, compress=False):
         """
         Initialize the TaskInProgressMatrix.
 
@@ -31,18 +31,23 @@ class TaskInProgressMatrix:
         self.__starved_tasks_list = []
         self.__completed_tasks_list = []
         self.__task_execution_dict = {}
+        self.__compress = compress
 
     @property
-    def data(self):
+    def data_matrix(self):
         """
         Get the underlying task matrix data.
 
         @return: the task matrix data
         @rtype: numpy.ndarray
         """
-        self.__matrix = np.zeros((self.__max_bandwidth, self.__end_time+1), dtype=int)
+        self.__matrix = np.zeros((self.__max_bandwidth, self.__end_time + 1), dtype=int)
         self.__draw_matrix()
         return self.__matrix
+
+    @property
+    def data_dict(self):
+        return self.__task_execution_dict
 
     @property
     def starved_tasks(self):
@@ -52,11 +57,15 @@ class TaskInProgressMatrix:
     def completed_tasks(self):
         return self.__completed_tasks_list
 
+    @property
+    def compress(self):
+        return self.__compress
+
     def __draw_matrix(self):
         for i in sorted(self.__task_execution_dict.keys()):  # columns, time stamps
             task_list = self.__task_execution_dict[i]
             bandwidth_count = 0
-            for j in range(len(task_list)): # task list in bandwidth allocated for task
+            for j in range(len(task_list)):  # task list in bandwidth allocated for task
                 task = task_list[j]
                 task_id = task.id
                 task_bandwidth = bandwidth_count + task.bandwidth
@@ -64,12 +73,15 @@ class TaskInProgressMatrix:
                     self.__matrix[bandwidth_count][i] = task_id
                     bandwidth_count += 1
 
-    def __get_free_bandwidth(self, time_slot):
+    def __get_free_bandwidth(self, time_slot, custom_list=None):
+        if custom_list is not None:
+            task_list = custom_list
+        else:
+            try:
+                task_list = self.__task_execution_dict[time_slot]
+            except KeyError:  # No tasks allocated, so all is free
+                return self.__max_bandwidth
         sum_bandwidth = self.__max_bandwidth
-        try:
-            task_list = self.__task_execution_dict[time_slot]
-        except KeyError:  # No tasks allocated, so all is free
-            return sum_bandwidth
         for one_task in task_list:
             sum_bandwidth -= one_task.bandwidth
         return sum_bandwidth
@@ -94,7 +106,7 @@ class TaskInProgressMatrix:
     def __add_task_to_in_progress_dict(self, task):
         task_start_time = task.actual_start_time
         task_end_time = task.actual_end_time
-        for one_time_slot in range(task_start_time, task_end_time+1):
+        for one_time_slot in range(task_start_time, task_end_time + 1):
             try:
                 task_list = self.__task_execution_dict[one_time_slot]
             except KeyError:
@@ -102,7 +114,7 @@ class TaskInProgressMatrix:
                 task_list = self.__task_execution_dict[one_time_slot]
             task_list.append(task)
 
-    def __sort_task_list(self, time_slot, reversePriority=False):
+    def __sorted_task_list(self, time_slot, reversePriority=False):
         try:
             task_list = self.__task_execution_dict[time_slot]
         except KeyError:
@@ -111,7 +123,27 @@ class TaskInProgressMatrix:
             return
         sorted_list = sorted(task_list, key=attrgetter('created_time'))  # sort by created time first (secondary key)
         sorted_list = sorted(sorted_list, key=attrgetter('priority'), reverse=reversePriority)  # then sort by priority
-        self.__task_execution_dict[time_slot] = sorted_list
+        return sorted_list
+
+    def __add_task_compress(self, task):
+        task_start_time = task.actual_start_time
+        task_bandwidth = task.bandwidth
+        compressed_task_list = []
+        # get task list sorted by priority, lowest first
+        lp_sorted_list = self.__sorted_task_list(task_start_time, reversePriority=False)
+        for i in range(len(lp_sorted_list)):
+            lowest_task = lp_sorted_list[i]
+            lowest_task.compress()
+            free_bandwidth = self.__get_free_bandwidth(task_start_time, lp_sorted_list)
+            compressed_task_list.append(lowest_task)
+            if free_bandwidth >= task_bandwidth:
+                task.status = TaskStatus.IN_PROGRESS
+                self.__add_task_to_in_progress_dict(task)
+                return True
+        # could not find bandwidth for the task
+        for task in compressed_task_list:
+            task.decompress()
+        return False
 
     def add_task(self, task):
         """
@@ -123,11 +155,7 @@ class TaskInProgressMatrix:
         """
         task_bandwidth = task.bandwidth
         start_time = task.actual_start_time
-        # free_bandwidth, free_rows_list = self.__get_free_bandwidth_indices_list(start_time)
         free_bandwidth = self.__get_free_bandwidth(start_time)
-        if task_bandwidth > free_bandwidth:
-            return False
-        # task_id = task.id
         task_end_time = start_time + task.duration
         # if task end time is more than total allocated time, nothing to do here,
         # task is dropped and moved to starved task list
@@ -135,6 +163,11 @@ class TaskInProgressMatrix:
             task.status = TaskStatus.DROPPED
             self.__starved_tasks_list.append(task)
             return True
+        if task_bandwidth > free_bandwidth:
+            if self.compress:
+                return self.__add_task_compress(task)
+            else:
+                return False
         # set task status as in progress
         task.status = TaskStatus.IN_PROGRESS
         # add the task to the task allocation dictionary

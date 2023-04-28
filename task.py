@@ -111,6 +111,10 @@ class Task:
     def compress(self):
         self.__bandwidth = self.__min_bandwidth
 
+    # decompress bandwidth
+    def decompress(self):
+        self.reset_bandwidth()
+
     # String representation of the Task object
     def __repr__(self):
         return "Task(id={} bandwidth={}, minimum bandwidth={}, created_time={}, actual start time={}, duration={}, " \

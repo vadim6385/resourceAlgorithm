@@ -3,7 +3,6 @@ The class represents a task with attributes for bandwidth, start time, duration,
 It includes getter and setter methods to access and modify these attributes.
 """
 import random
-from collections import deque
 from enum import IntEnum
 from itertools import count
 
@@ -14,6 +13,7 @@ from utils import DEBUG_HALT
 class InsufficientBandwidthException(Exception):
     def __init__(self, task_id):
         super().__init__("Insufficient bandwidth for task: {}".format(task_id))
+
 
 class TaskPriority(IntEnum):
     REGULAR = 0
@@ -29,6 +29,7 @@ class Task:
     def __init__(self, bandwidth, created_time, duration, priority, min_bandwidth=0):
         self.__id = next(self.id_iter)
         self.__bandwidth = bandwidth
+        self.__original_bandwidth = bandwidth
         self.__min_bandwidth = min_bandwidth
         self.__created_time = created_time
         self.__actual_start_time = created_time
@@ -44,6 +45,11 @@ class Task:
     @property
     def bandwidth(self):
         return self.__bandwidth
+
+    # Get original bandwidth for the task
+    @property
+    def original_bandwidth(self):
+        return self.__original_bandwidth
 
     # get minimum bandwidth required for the task
     @property
@@ -89,9 +95,18 @@ class Task:
     def actual_end_time(self):
         return self.__actual_start_time + self.__duration
 
+    # reset task start time to original task start time
+    def reset_start_time(self):
+        self.__actual_start_time = self.__created_time
+
+    # reset task bandwidth to original task bandwidth
+    def reset_bandwidth(self):
+        self.__bandwidth = self.__original_bandwidth
+
     # String representation of the Task object
     def __repr__(self):
-        return "Task(id={} bandwidth={}, minimum bandwidth={}, created_time={}, actual start time{}, duration={}, actual end time={}, priority={})".format(
+        return "Task(id={} bandwidth={}, minimum bandwidth={}, created_time={}, actual start time={}, duration={}, " \
+               "actual end time={}, priority={})".format(
             self.__bandwidth,
             self.__min_bandwidth,
             self.__id,
@@ -109,14 +124,14 @@ def generate_random_tasks(num_tasks, max_bandwidth, start_time=0, end_time=DEFAU
     :param max_bandwidth: maximum bandwidth for the task
     :param start_time: global task start time
     :param end_time: global task end time
-    :return: deque() of generated tasks
+    :return: list of generated tasks
     """
-    ret = deque()
+    ret = []
     for i in range(num_tasks):
-        task_bandwidth = random.randint(0, int(max_bandwidth/2))
+        task_bandwidth = random.randint(0, int(max_bandwidth / 2))
         task_min_bandwidth = random.randint(0, task_bandwidth)
         priority = random.randrange(TaskPriority.REGULAR, TaskPriority.ENTERPRISE + 10, 10)
-        task_created_time = random.randint(start_time, int(end_time-1))
+        task_created_time = random.randint(start_time, int(end_time - 1))
         max_duration = end_time - task_created_time
         duration = random.randint(1, max_duration)  # Use max_duration as the upper limit
         if (task_created_time + duration) > end_time:
@@ -125,3 +140,14 @@ def generate_random_tasks(num_tasks, max_bandwidth, start_time=0, end_time=DEFAU
                         duration=duration, priority=priority, min_bandwidth=task_min_bandwidth)
         ret.append(new_task)
     return ret
+
+
+def reset_task_start_time_bandwidth(tasks_list):
+    """
+    reset start time and bandwidth for tasks
+    :param tasks: tasks to reset
+    :return: None
+    """
+    for task in tasks_list:
+        task.reset_start_time()
+        task.reset_bandwidth()

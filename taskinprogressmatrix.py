@@ -1,5 +1,5 @@
 """
-This module defines a TaskMatrix class that helps manage task and their bandwidth allocation.
+This module defines a TaskInProgressMatrix class that helps manage task and their bandwidth allocation.
 """
 
 import numpy as np
@@ -9,14 +9,14 @@ DEFAULT_END_TIME = 0xFF
 DEFAULT_MATRIX_END_TIME = 0x200
 
 
-class TaskMatrix:
+class TaskInProgressMatrix:
     """
     A class representing a matrix of task and their bandwidth allocation.
     """
 
     def __init__(self, max_bandwidth, end_time=DEFAULT_END_TIME):
         """
-        Initialize the TaskMatrix.
+        Initialize the TaskInProgressMatrix.
 
         @param max_bandwidth: maximum bandwidth for the task matrix
         @type max_bandwidth: int
@@ -27,6 +27,7 @@ class TaskMatrix:
         self.__end_time = end_time
         self.__matrix = np.zeros((self.__max_bandwidth, self.__end_time), dtype=int)
         self.__starved_tasks_list = []
+        self.__task_execution_dict = {}
 
     @property
     def data(self):
@@ -61,7 +62,7 @@ class TaskMatrix:
 
     def add_task(self, task):
         """
-        Add a task to the TaskMatrix and allocate bandwidth.
+        Add a task to the TaskInProgressMatrix and allocate bandwidth.
         @param task: task to be added
         @type task: Task
         @return: True if the task was added, False if not enough bandwidth
@@ -74,10 +75,12 @@ class TaskMatrix:
             return False
         task_id = task.id
         task_end_time = start_time + task.duration
-        # if task end time is more than allocated time, task is dropped and moved to starved task list
+        # if task end time is more than total allocated time, nothing to do here,
+        # task is dropped and moved to starved task list
         if task_end_time > self.__end_time:
             self.__starved_tasks_list.append(task)
             return True
+        # add the task to the task allocation dictionary
         # "paint" the appropriate places in task matrix with task id number
         for i in free_rows_list:  # matrix rows
             for j in range(start_time, task_end_time):  # matrix columns
@@ -89,9 +92,9 @@ class TaskMatrix:
 
     def __repr__(self):
         """
-        Generate a string representation of the TaskMatrix.
+        Generate a string representation of the TaskInProgressMatrix.
 
-        @return: string representation of the TaskMatrix
+        @return: string representation of the TaskInProgressMatrix
         @rtype: str
         """
         ret = "\t"

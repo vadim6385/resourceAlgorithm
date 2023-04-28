@@ -5,7 +5,7 @@ Task executor class
 from collections import deque
 from operator import attrgetter
 
-from taskmatrix import TaskMatrix, DEFAULT_END_TIME
+from taskinprogressmatrix import TaskInProgressMatrix, DEFAULT_END_TIME
 from utils import sort_queue
 
 
@@ -24,7 +24,7 @@ class Executor:
         self.__max_bandwidth = max_bandwidth
         self.__start_time = start_time
         self.__submission_queue_dict = {}  # list of submission queues by time
-        self.__task_matrix = TaskMatrix(self.__max_bandwidth)
+        self.__task_matrix = TaskInProgressMatrix(self.__max_bandwidth)
 
     @property
     def starved_tasks(self):
@@ -53,7 +53,7 @@ class Executor:
         """
         Get the task matrix for the executor.
         @return: the task matrix
-        @rtype: TaskMatrix
+        @rtype: TaskInProgressMatrix
         """
         return self.__task_matrix
 

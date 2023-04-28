@@ -6,7 +6,7 @@ import random
 from enum import IntEnum
 from itertools import count
 
-from taskmatrix import DEFAULT_END_TIME
+from taskinprogressmatrix import DEFAULT_END_TIME
 from utils import DEBUG_HALT
 
 
@@ -102,6 +102,10 @@ class Task:
     # reset task bandwidth to original task bandwidth
     def reset_bandwidth(self):
         self.__bandwidth = self.__original_bandwidth
+
+    # compress the task to minimal bandwidth
+    def compress(self):
+        self.__bandwidth = self.__min_bandwidth
 
     # String representation of the Task object
     def __repr__(self):

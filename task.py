@@ -3,22 +3,15 @@ The class represents a task with attributes for bandwidth, start time, duration,
 It includes getter and setter methods to access and modify these attributes.
 """
 import random
-from enum import IntEnum
 from itertools import count
 
 from taskinprogressmatrix import DEFAULT_END_TIME
-from utils import DEBUG_HALT
+from utils import DEBUG_HALT, TaskPriority, TaskStatus
 
 
 class InsufficientBandwidthException(Exception):
     def __init__(self, task_id):
         super().__init__("Insufficient bandwidth for task: {}".format(task_id))
-
-
-class TaskPriority(IntEnum):
-    REGULAR = 0
-    PREMIUM = 10
-    ENTERPRISE = 20
 
 
 class Task:
@@ -35,11 +28,22 @@ class Task:
         self.__actual_start_time = created_time
         self.__duration = duration
         self.__priority = priority
+        self.__task_status = TaskStatus.PENDING
 
     # get unique task Id
     @property
     def id(self):
         return self.__id
+
+    # Get task status
+    @property
+    def status(self) -> TaskStatus:
+        return self.__task_status
+
+    # Set task status
+    @status.setter
+    def status(self, val: TaskStatus):
+        self.__task_status = val
 
     # Get bandwidth of the task
     @property

@@ -2,9 +2,18 @@
 The class represents a task with attributes for bandwidth, start time, duration, and priority.
 It includes getter and setter methods to access and modify these attributes.
 """
+import random
+from collections import deque
 from enum import IntEnum
 from itertools import count
 
+from taskmatrix import DEFAULT_END_TIME
+from utils import DEBUG_HALT
+
+
+class InsufficientBandwidthException(Exception):
+    def __init__(self, task_id):
+        super().__init__("Insufficient bandwidth for task: {}".format(task_id))
 
 class TaskPriority(IntEnum):
     REGULAR = 0
@@ -17,9 +26,10 @@ class Task:
     id_iter = count(start=1, step=1)
 
     # Initialize Task object with bandwidth, created_time, duration, and priority
-    def __init__(self, bandwidth, created_time, duration, priority):
+    def __init__(self, bandwidth, created_time, duration, priority, min_bandwidth=0):
         self.__id = next(self.id_iter)
         self.__bandwidth = bandwidth
+        self.__min_bandwidth = min_bandwidth
         self.__created_time = created_time
         self.__actual_start_time = created_time
         self.__duration = duration
@@ -34,6 +44,18 @@ class Task:
     @property
     def bandwidth(self):
         return self.__bandwidth
+
+    # get minimum bandwidth required for the task
+    @property
+    def min_bandwidth(self):
+        return self.__min_bandwidth
+
+    # set task bandwidth, but not below min bandwidth
+    @bandwidth.setter
+    def bandwidth(self, val):
+        if val < self.__min_bandwidth:
+            raise InsufficientBandwidthException(self.__id)
+        self.__bandwidth = val
 
     # Get created time of the task
     @property
@@ -69,11 +91,37 @@ class Task:
 
     # String representation of the Task object
     def __repr__(self):
-        return "Task(id={} bandwidth={}, created_time={}, actual start time{}, duration={}, actual end time={}, priority={})".format(
+        return "Task(id={} bandwidth={}, minimum bandwidth={}, created_time={}, actual start time{}, duration={}, actual end time={}, priority={})".format(
             self.__bandwidth,
+            self.__min_bandwidth,
             self.__id,
             self.__created_time,
             self.__actual_start_time,
             self.__duration,
             self.actual_end_time,
             self.__priority)
+
+
+def generate_random_tasks(num_tasks, max_bandwidth, start_time=0, end_time=DEFAULT_END_TIME):
+    """
+    generate queue of random tasks
+    :param num_tasks: number of tasks to generate
+    :param max_bandwidth: maximum bandwidth for the task
+    :param start_time: global task start time
+    :param end_time: global task end time
+    :return: deque() of generated tasks
+    """
+    ret = deque()
+    for i in range(num_tasks):
+        task_bandwidth = random.randint(0, int(max_bandwidth/2))
+        task_min_bandwidth = random.randint(0, task_bandwidth)
+        priority = random.randrange(TaskPriority.REGULAR, TaskPriority.ENTERPRISE + 10, 10)
+        task_created_time = random.randint(start_time, int(end_time-1))
+        max_duration = end_time - task_created_time
+        duration = random.randint(1, max_duration)  # Use max_duration as the upper limit
+        if (task_created_time + duration) > end_time:
+            DEBUG_HALT()
+        new_task = Task(bandwidth=task_bandwidth, created_time=task_created_time,
+                        duration=duration, priority=priority, min_bandwidth=task_min_bandwidth)
+        ret.append(new_task)
+    return ret

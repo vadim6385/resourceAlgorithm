@@ -117,16 +117,16 @@ class Task:
 
     # String representation of the Task object
     def __repr__(self):
-        return "Task(id={} bandwidth={}, minimum bandwidth={}, created_time={}, actual start time={}, duration={}, " \
-               "actual end time={}, priority={})".format(
-            self.__bandwidth,
-            self.__min_bandwidth,
-            self.__id,
-            self.__created_time,
-            self.__actual_start_time,
-            self.__duration,
-            self.actual_end_time,
-            self.__priority)
+        return "Task(id={0} bandwidth={1}, minimum bandwidth={2}, created_time={3}, actual start time={4}, " \
+               "duration={5}, actual end time={6}, priority={7})".format(
+                self.__id,
+                self.__bandwidth,
+                self.__min_bandwidth,
+                self.__created_time,
+                self.__actual_start_time,
+                self.__duration,
+                self.actual_end_time,
+                self.__priority)
 
 
 def generate_random_tasks(num_tasks, max_bandwidth, start_time=0, end_time=DEFAULT_END_TIME):

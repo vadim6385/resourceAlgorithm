@@ -6,7 +6,7 @@ from operator import attrgetter
 import numpy as np
 
 # Constants for default end time values
-from utils import TaskStatus
+from utils import TaskStatus, DEBUG_HALT
 
 DEFAULT_END_TIME = 0xFF
 DEFAULT_MATRIX_END_TIME = 0x200
@@ -27,7 +27,8 @@ class TaskInProgressMatrix:
         @type end_time: int
         """
         self.__max_bandwidth = max_bandwidth
-        self.__end_time = end_time
+        self.__end_time = end_time+1
+        self.__matrix = np.zeros((self.__max_bandwidth, self.__end_time), dtype=int)
         self.__starved_tasks_list = []
         self.__completed_tasks_list = []
         self.__task_execution_dict = {}
@@ -37,11 +38,9 @@ class TaskInProgressMatrix:
     def data_matrix(self):
         """
         Get the underlying task matrix data.
-
         @return: the task matrix data
         @rtype: numpy.ndarray
         """
-        self.__matrix = np.zeros((self.__max_bandwidth, self.__end_time + 1), dtype=int)
         self.__draw_matrix()
         return self.__matrix
 
@@ -61,6 +60,16 @@ class TaskInProgressMatrix:
     def compress(self):
         return self.__compress
 
+    def __update_task(self, task):
+        time_start = task.actual_start_time
+        time_end = task.actual_end_time
+        task_id = task.id
+        for i in range(time_start, time_end+1):
+            for j in range(len(self.__task_execution_dict[i])):
+                if self.__task_execution_dict[i][j].id == task_id:
+                    self.__task_execution_dict[i][j] = task
+                    break
+
     def __draw_matrix(self):
         for i in sorted(self.__task_execution_dict.keys()):  # columns, time stamps
             task_list = self.__task_execution_dict[i]
@@ -69,6 +78,8 @@ class TaskInProgressMatrix:
                 task = task_list[j]
                 task_id = task.id
                 task_bandwidth = bandwidth_count + task.bandwidth
+                if task_bandwidth > self.__max_bandwidth:
+                    DEBUG_HALT()
                 while bandwidth_count < task_bandwidth:
                     self.__matrix[bandwidth_count][i] = task_id
                     bandwidth_count += 1
@@ -139,10 +150,12 @@ class TaskInProgressMatrix:
             if free_bandwidth >= task_bandwidth:
                 task.status = TaskStatus.IN_PROGRESS
                 self.__add_task_to_in_progress_dict(task)
+                for task in compressed_task_list:
+                    self.__update_task(task)
                 return True
         # could not find bandwidth for the task
-        for task in compressed_task_list:
-            task.decompress()
+        for one_task in compressed_task_list:
+            one_task.decompress()
         return False
 
     def add_task(self, task):

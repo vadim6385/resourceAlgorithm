@@ -13,7 +13,7 @@ def show_plot(task_matrix, dropped_tasks):
     ax = sns.heatmap(task_matrix, cmap="YlGnBu")
     plt.title("Task allocation graph, dropped tasks: {}".format(dropped_tasks), fontsize=20)
     plt.xlabel("t(sec)")
-    plt.ylabel("Bandwith(Mbps")
+    plt.ylabel("Bandwidth(Mbps)")
     plt.show()
 
 

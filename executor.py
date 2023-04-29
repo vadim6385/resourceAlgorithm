@@ -6,7 +6,6 @@ from collections import deque
 from operator import attrgetter
 
 from taskinprogressmatrix import TaskInProgressMatrix, DEFAULT_END_TIME
-from utils import sort_queue
 
 
 class Executor:

@@ -68,6 +68,11 @@ class Task:
             raise InsufficientBandwidthException(self.__id)
         self.__bandwidth = val
 
+    # Is the task already compressed?
+    @property
+    def is_compressed(self):
+        return self.__bandwidth == self.__min_bandwidth
+
     # Get created time of the task
     @property
     def created_time(self):

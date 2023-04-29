@@ -119,13 +119,14 @@ class TaskInProgressMatrix:
         lp_sorted_list = self.__sorted_task_list(task_start_time, reversePriority=False)
         for i in range(len(lp_sorted_list)):
             lowest_task = lp_sorted_list[i]
-            lowest_task.compress()
-            free_bandwidth = self.__get_free_bandwidth(task_start_time)#, lp_sorted_list)
-            compressed_task_list.append(lowest_task)
-            if free_bandwidth >= task_bandwidth:
-                task.status = TaskStatus.IN_PROGRESS
-                self.__add_task_to_in_progress_dict(task)
-                return True
+            if not task.is_compressed:
+                lowest_task.compress()
+                compressed_task_list.append(lowest_task)
+                free_bandwidth = self.__get_free_bandwidth(task_start_time)#, lp_sorted_list)
+                if free_bandwidth >= task_bandwidth:
+                    task.status = TaskStatus.IN_PROGRESS
+                    self.__add_task_to_in_progress_dict(task)
+                    return True
         # could not find bandwidth for the task
         for one_task in compressed_task_list:
             one_task.decompress()

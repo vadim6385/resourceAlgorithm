@@ -5,12 +5,13 @@ Driver code
 import seaborn as sns
 import matplotlib.pylab as plt
 
-from task import generate_random_tasks, reset_task_start_time_bandwidth
+from task import generate_random_tasks
 from executor import Executor
 
 
 def show_plot(task_matrix, dropped_tasks):
-    ax = sns.heatmap(task_matrix, cmap="YlGnBu")
+    fig, ax = plt.subplots()
+    sns.heatmap(task_matrix, cmap='Greens', ax=ax)
     plt.title("Task allocation graph, dropped tasks: {}".format(dropped_tasks), fontsize=20)
     plt.xlabel("t(sec)")
     plt.ylabel("Bandwidth(Mbps)")
@@ -32,8 +33,6 @@ def main(compress):
     print("Dropped task list:")
     [print(i) for i in task_exec.starved_tasks]
     show_plot(task_exec.task_matrix, num_dropped_tasks)
-    # reset_task_start_time_bandwidth(task_generated_list)
-    # print(task_generated_list)
 
 
 if __name__ == "__main__":

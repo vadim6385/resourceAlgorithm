@@ -62,15 +62,7 @@ class TaskInProgressMatrix:
         draw task IDs in task matrix
         """
         for i in sorted(self.__task_execution_dict.keys()):  # columns, time stamps
-            bandwidth_count = 0
-            for task in self.__task_execution_dict[i]:  # task list in bandwidth allocated for task
-                task_id = task.id
-                task_bandwidth = bandwidth_count + task.bandwidth
-                if task_bandwidth > self.__max_bandwidth:
-                    DEBUG_HALT()
-                while bandwidth_count < task_bandwidth:
-                    self.__matrix[bandwidth_count][i] = task_id
-                    bandwidth_count += 1
+            self.__draw_matrix_column(i)
 
     def __get_free_bandwidth(self, time_slot, custom_list=None):
         if custom_list is not None:
@@ -86,6 +78,17 @@ class TaskInProgressMatrix:
         if sum_bandwidth > self.__max_bandwidth:
             DEBUG_HALT()
         return self.__max_bandwidth - sum_bandwidth
+
+    def __draw_matrix_column(self, time_slot):
+        bandwidth_count = 0
+        for task in self.__task_execution_dict[time_slot]:  # task list in bandwidth allocated for task
+            task_id = task.id
+            task_bandwidth = bandwidth_count + task.bandwidth
+            if task_bandwidth > self.__max_bandwidth:
+                DEBUG_HALT()
+            while bandwidth_count < task_bandwidth:
+                self.__matrix[bandwidth_count][time_slot] = task_id
+                bandwidth_count += 1
 
     def __add_task_to_in_progress(self, task):
         task_start_time = task.actual_start_time

@@ -59,7 +59,7 @@ def show_plot(task_matrix, dropped_tasks):
         # Calculate text color based on the value
         text_color = color_map(1 - normalized_value)
 
-        heatmap.text(x_center + 0.5, y_center + 0.5, value, horizontalalignment='center', verticalalignment='center',
-                     color=text_color, fontsize=font_size, fontweight='bold')
+        heatmap.text(x_center + 0.5, y_center + 0.5, value, horizontalalignment='center', verticalalignment='center', color=text_color, fontsize=font_size, fontweight='bold')
 
     plt.show()
+

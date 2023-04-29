@@ -55,7 +55,7 @@ class Executor:
         @return: the task matrix
         @rtype: TaskInProgressMatrix
         """
-        return self.__task_matrix
+        return self.__task_matrix.data_matrix()
 
     def add_task(self, task):
         """

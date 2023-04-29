@@ -4,6 +4,7 @@ It includes getter and setter methods to access and modify these attributes.
 """
 import random
 from itertools import count
+from operator import attrgetter
 
 from taskinprogressmatrix import DEFAULT_END_TIME
 from utils import DEBUG_HALT, TaskPriority, TaskStatus
@@ -152,7 +153,7 @@ def generate_random_tasks(num_tasks, max_bandwidth, start_time=0, end_time=DEFAU
         new_task = Task(bandwidth=task_bandwidth, created_time=task_created_time,
                         duration=duration, priority=priority, min_bandwidth=task_min_bandwidth)
         ret.append(new_task)
-    return ret
+    return sorted(ret, key=attrgetter('created_time'))
 
 
 def reset_task_start_time_bandwidth(tasks_list):

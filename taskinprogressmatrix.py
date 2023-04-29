@@ -41,9 +41,9 @@ class TaskInProgressMatrix:
         self.__draw_matrix()
         return self.__matrix
 
-    @property
-    def data_dict(self):
-        return self.__task_execution_dict
+    # @property
+    # def data_dict(self):
+    #     return self.__task_execution_dict
 
     @property
     def dropped_tasks(self):
@@ -90,12 +90,10 @@ class TaskInProgressMatrix:
     def __add_task_to_in_progress_dict(self, task):
         task_start_time = task.actual_start_time
         task_end_time = task.actual_end_time
-        for one_time_slot in range(task_start_time, task_end_time + 1):
-            if one_time_slot == task_end_time:
-                pass
+        for one_time_slot in range(task_start_time, task_end_time):
             try:
                 free_bandwidth = self.__get_free_bandwidth(one_time_slot)
-                if free_bandwidth < task.bandwidth:
+                if free_bandwidth < task.bandwidth or free_bandwidth < 0:
                     DEBUG_HALT()
                 self.__task_execution_dict[one_time_slot].append(task)
             except KeyError:
@@ -142,9 +140,9 @@ class TaskInProgressMatrix:
         @rtype: bool
         """
         task_bandwidth = task.bandwidth
-        start_time = task.actual_start_time
-        free_bandwidth = self.__get_free_bandwidth(start_time)
-        task_end_time = start_time + task.duration
+        task_start_time = task.actual_start_time
+        free_bandwidth = self.__get_free_bandwidth(task_start_time)
+        task_end_time = task.actual_end_time
         # if task end time is more than total allocated time, nothing to do here,
         # task is dropped and moved to starved task list
         if task_end_time > self.__end_time:

@@ -67,11 +67,10 @@ class Executor:
         # append task to queues by time
         task_start_time = task.actual_start_time
         try:
-            time_deque = self.__submission_queue_dict[task_start_time]
+            self.__submission_queue_dict[task_start_time].append(task)
         except KeyError:
             self.__submission_queue_dict[task_start_time] = deque()
-            time_deque = self.__submission_queue_dict[task_start_time]
-        time_deque.append(task)
+            self.__submission_queue_dict[task_start_time].append(task)
         # after appending, sort queue by priority and add them to submission queue
         self.__sort_queue(task_start_time)
 
@@ -84,7 +83,7 @@ class Executor:
         sorted_que = sorted(original_que, key=attrgetter('created_time')) # sort by created time first (secondary key)
         sorted_que = sorted(sorted_que, key=attrgetter('priority'), reverse=True) # then sort by priority
         # sorted_que = sorted(original_que, key= lambda task: (task.priority, task.created_time), reverse=True)
-        self.__submission_queue_dict[queue_num] = sorted_que
+        self.__submission_queue_dict[queue_num] = deque(sorted_que)
 
     def __add_task_to_exec_matrix(self, task):
         """
@@ -115,7 +114,7 @@ class Executor:
             try:
                 one_time_task_queue = self.__submission_queue_dict[i]
                 while one_time_task_queue:
-                    task = one_time_task_queue.pop()
+                    task = one_time_task_queue.popleft()
                     self.__add_task_to_exec_matrix(task)
             except KeyError:
                 pass

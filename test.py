@@ -32,8 +32,8 @@ def main(compress):
     print("Dropped task list:")
     [print(i) for i in task_exec.starved_tasks]
     show_plot(task_exec.task_matrix, num_dropped_tasks)
-    reset_task_start_time_bandwidth(task_generated_list)
-    print(task_generated_list)
+    # reset_task_start_time_bandwidth(task_generated_list)
+    # print(task_generated_list)
 
 
 if __name__ == "__main__":

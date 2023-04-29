@@ -9,7 +9,6 @@ import numpy as np
 from utils import TaskStatus, DEBUG_HALT
 
 DEFAULT_END_TIME = 0xFF
-DEFAULT_MATRIX_END_TIME = 0x200
 
 
 class TaskInProgressMatrix:
@@ -27,9 +26,9 @@ class TaskInProgressMatrix:
         @type end_time: int
         """
         self.__max_bandwidth = max_bandwidth
-        self.__end_time = end_time+1
-        self.__matrix = np.zeros((self.__max_bandwidth, self.__end_time), dtype=int)
-        self.__starved_tasks_list = []
+        self.__end_time = end_time
+        self.__matrix = np.zeros((self.__max_bandwidth, self.__end_time+1), dtype=int)
+        self.__dropped_tasks_list = []
         self.__completed_tasks_list = []
         self.__task_execution_dict = {}
         self.__compress = compress
@@ -49,8 +48,8 @@ class TaskInProgressMatrix:
         return self.__task_execution_dict
 
     @property
-    def starved_tasks(self):
-        return self.__starved_tasks_list
+    def dropped_tasks(self):
+        return self.__dropped_tasks_list
 
     @property
     def completed_tasks(self):
@@ -150,8 +149,8 @@ class TaskInProgressMatrix:
             if free_bandwidth >= task_bandwidth:
                 task.status = TaskStatus.IN_PROGRESS
                 self.__add_task_to_in_progress_dict(task)
-                for task in compressed_task_list:
-                    self.__update_task(task)
+                # for task in compressed_task_list:
+                #     self.__update_task(task)
                 return True
         # could not find bandwidth for the task
         for one_task in compressed_task_list:
@@ -174,7 +173,7 @@ class TaskInProgressMatrix:
         # task is dropped and moved to starved task list
         if task_end_time > self.__end_time:
             task.status = TaskStatus.DROPPED
-            self.__starved_tasks_list.append(task)
+            self.__dropped_tasks_list.append(task)
             return True
         if task_bandwidth > free_bandwidth:
             if self.compress:

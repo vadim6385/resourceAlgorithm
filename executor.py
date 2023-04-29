@@ -28,7 +28,7 @@ class Executor:
 
     @property
     def starved_tasks(self):
-        return self.__task_matrix.starved_tasks
+        return self.__task_matrix.dropped_tasks
 
     @property
     def max_bandwidth(self):

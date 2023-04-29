@@ -5,15 +5,14 @@ Task executor class
 from collections import deque
 from operator import attrgetter
 
-from taskmatrix import TaskMatrix, DEFAULT_END_TIME
-from utils import sort_queue
+from taskinprogressmatrix import TaskInProgressMatrix, DEFAULT_END_TIME
 
 
 class Executor:
     """
     The Executor class manages the task execution and bandwidth allocation process.
     """
-    def __init__(self, max_bandwidth, start_time=0):
+    def __init__(self, max_bandwidth, start_time=0, compress=False):
         """
         Initialize the Executor.
         @param max_bandwidth: maximum bandwidth for the executor
@@ -24,11 +23,11 @@ class Executor:
         self.__max_bandwidth = max_bandwidth
         self.__start_time = start_time
         self.__submission_queue_dict = {}  # list of submission queues by time
-        self.__task_matrix = TaskMatrix(self.__max_bandwidth)
+        self.__task_matrix = TaskInProgressMatrix(self.__max_bandwidth, compress=compress)
 
     @property
     def starved_tasks(self):
-        return self.__task_matrix.starved_tasks
+        return self.__task_matrix.dropped_tasks
 
     @property
     def max_bandwidth(self):
@@ -53,9 +52,9 @@ class Executor:
         """
         Get the task matrix for the executor.
         @return: the task matrix
-        @rtype: TaskMatrix
+        @rtype: TaskInProgressMatrix
         """
-        return self.__task_matrix
+        return self.__task_matrix.data_matrix()
 
     def add_task(self, task):
         """
@@ -67,11 +66,10 @@ class Executor:
         # append task to queues by time
         task_start_time = task.actual_start_time
         try:
-            time_deque = self.__submission_queue_dict[task_start_time]
+            self.__submission_queue_dict[task_start_time].append(task)
         except KeyError:
             self.__submission_queue_dict[task_start_time] = deque()
-            time_deque = self.__submission_queue_dict[task_start_time]
-        time_deque.append(task)
+            self.__submission_queue_dict[task_start_time].append(task)
         # after appending, sort queue by priority and add them to submission queue
         self.__sort_queue(task_start_time)
 
@@ -84,9 +82,9 @@ class Executor:
         sorted_que = sorted(original_que, key=attrgetter('created_time')) # sort by created time first (secondary key)
         sorted_que = sorted(sorted_que, key=attrgetter('priority'), reverse=True) # then sort by priority
         # sorted_que = sorted(original_que, key= lambda task: (task.priority, task.created_time), reverse=True)
-        self.__submission_queue_dict[queue_num] = sorted_que
+        self.__submission_queue_dict[queue_num] = deque(sorted_que)
 
-    def add_task_to_exec_matrix(self, task):
+    def __add_task_to_exec_matrix(self, task):
         """
         Add a task to the task execution matrix.
         @param task: task to add
@@ -115,7 +113,7 @@ class Executor:
             try:
                 one_time_task_queue = self.__submission_queue_dict[i]
                 while one_time_task_queue:
-                    task = one_time_task_queue.pop()
-                    self.add_task_to_exec_matrix(task)
+                    task = one_time_task_queue.popleft()
+                    self.__add_task_to_exec_matrix(task)
             except KeyError:
                 pass

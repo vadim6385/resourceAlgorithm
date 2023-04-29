@@ -25,8 +25,8 @@ class TaskInProgressMatrix:
         @type end_time: int
         """
         self.__max_bandwidth = max_bandwidth
-        self.__end_time = end_time
-        self.__matrix = np.zeros((self.__max_bandwidth, self.__end_time+1), dtype=int)
+        self.__end_time = end_time+1
+        self.__matrix = np.zeros((self.__max_bandwidth, self.__end_time), dtype=int)
         self.__dropped_tasks_list = []
         self.__completed_tasks_list = []
         self.__task_execution_dict = {}

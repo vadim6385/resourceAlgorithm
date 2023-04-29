@@ -26,7 +26,7 @@ class Executor:
         self.__task_matrix = TaskInProgressMatrix(self.__max_bandwidth, compress=compress)
 
     @property
-    def starved_tasks(self):
+    def dropped_tasks(self):
         return self.__task_matrix.dropped_tasks
 
     @property

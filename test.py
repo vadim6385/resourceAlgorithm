@@ -13,11 +13,12 @@ def main(task_generated_list, compress):
         task_exec.add_task(task)
     task_exec.execute_tasks()
     # print dropped tasks
-    num_dropped_tasks = len(task_exec.starved_tasks)
+    num_dropped_tasks = len(task_exec.dropped_tasks)
     print("Number of dropped tasks: {}".format(num_dropped_tasks))
     print("Dropped task list:")
-    [print(i) for i in task_exec.starved_tasks]
-    show_plot(task_exec.task_matrix, num_dropped_tasks)
+    [print(i) for i in task_exec.dropped_tasks]
+    dropped_tasks_ratio = float(num_dropped_tasks / len(task_generated_list))
+    show_plot(task_exec.task_matrix, num_dropped_tasks, dropped_tasks_ratio)
 
 
 if __name__ == "__main__":

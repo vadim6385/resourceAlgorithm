@@ -35,10 +35,11 @@ def find_rectangles_center(data):
     return rectangles
 
 
-def show_plot(task_matrix, dropped_tasks):
+def show_plot(task_matrix, dropped_tasks_num, dropped_tasks_ratio):
     fig, ax = plt.subplots()
     heatmap = sns.heatmap(task_matrix, cmap='Greens', ax=ax)
-    plt.title("Task allocation graph, dropped tasks: {}".format(dropped_tasks), fontsize=20)
+    plt.title("Task allocation graph, dropped tasks: {:d}\n"
+              "Total vs dropped tasks ratio: {:.2f}".format(dropped_tasks_num, dropped_tasks_ratio), fontsize=20)
     plt.xlabel("t(sec)")
     plt.ylabel("Bandwidth(Mbps)")
 

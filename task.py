@@ -8,8 +8,7 @@ from itertools import count
 from operator import attrgetter
 import json
 
-from taskinprogressmatrix import DEFAULT_END_TIME
-from utils import DEBUG_HALT
+from utils import DEBUG_HALT, DEFAULT_END_TIME
 
 
 class TaskPriority(IntEnum):
@@ -35,7 +34,7 @@ class Task:
     id_iter = count(start=1, step=1)
 
     # Initialize Task object with bandwidth, created_time, duration, and priority
-    def __init__(self, bandwidth, created_time, duration, priority, min_bandwidth=0):
+    def __init__(self, bandwidth=0, created_time=0, duration=0, priority=TaskPriority.REGULAR, min_bandwidth=0):
         self.__id = next(self.id_iter)
         self.__bandwidth = bandwidth
         self.__original_bandwidth = bandwidth
@@ -43,7 +42,7 @@ class Task:
         self.__created_time = created_time
         self.__actual_start_time = created_time
         self.__duration = duration
-        self.__priority = priority
+        self.priority = priority
         self.__task_status = TaskStatus.PENDING
 
     # get unique task Id
@@ -60,6 +59,10 @@ class Task:
     @status.setter
     def status(self, val: TaskStatus):
         self.__task_status = val
+
+    @status.setter
+    def status(self, val: int):
+        self.__task_status = TaskStatus(val)
 
     # Get bandwidth of the task
     @property
@@ -108,13 +111,23 @@ class Task:
 
     # Get priority of the task
     @property
-    def priority(self):
+    def priority(self) -> TaskPriority:
         return self.__priority
 
     # Set new priority for the task
     @priority.setter
     def priority(self, val):
-        self.__priority = val
+        if type(val) == TaskPriority:
+            self.__priority = val
+        elif type(val) == int:
+            self.__priority = TaskPriority(val)
+        elif type(val) == str:
+            try:
+                self.__priority = TaskPriority[val.upper()]
+            except KeyError:
+                DEBUG_HALT()
+        else:
+            raise Exception("Task priority accepts only int, string or TaskPriority")
 
     @property
     def actual_end_time(self):
@@ -139,16 +152,17 @@ class Task:
     # String representation of the Task object
     def __repr__(self):
         return "Task(id={} bandwidth={}, minimum bandwidth={}, original bandwidth={}, created_time={}, actual start " \
-               "time={}, duration={}, actual end time={}, priority={})".format(
-                                                                                self.__id,
-                                                                                self.__bandwidth,
-                                                                                self.__min_bandwidth,
-                                                                                self.__original_bandwidth,
-                                                                                self.__created_time,
-                                                                                self.__actual_start_time,
-                                                                                self.__duration,
-                                                                                self.actual_end_time,
-                                                                                self.__priority)
+               "time={}, duration={}, actual end time={}, priority={}, status={})".format(
+            self.id,
+            self.bandwidth,
+            self.min_bandwidth,
+            self.original_bandwidth,
+            self.created_time,
+            self.actual_start_time,
+            self.duration,
+            self.actual_end_time,
+            self.priority.name,
+            self.status.name)
 
     def to_dict(self):
         return {
@@ -160,9 +174,20 @@ class Task:
             'actual_start_time': self.__actual_start_time,
             'duration': self.__duration,
             'actual_end_time': self.actual_end_time,
-            'priority': self.__priority,
+            'priority': self.__priority.name, # Assuming TaskPriority is an Enum
             'status': self.__task_status.name  # Assuming TaskStatus is an Enum
         }
+
+    def from_dict(self, src_dict):
+        """update task parameters from dictionary"""
+        self.__id = src_dict['id']
+        self.__bandwidth = src_dict['bandwidth']
+        self.__min_bandwidth = src_dict['min_bandwidth']
+        self.__original_bandwidth = src_dict['original_bandwidth']
+        self.__created_time = src_dict['created_time']
+        self.__actual_start_time = src_dict['actual_start_time']
+        self.__duration = src_dict['duration']
+        self.priority = src_dict['priority']
 
 
 def generate_random_tasks(num_tasks, max_bandwidth, start_time=0, end_time=DEFAULT_END_TIME):
@@ -185,7 +210,8 @@ def generate_random_tasks(num_tasks, max_bandwidth, start_time=0, end_time=DEFAU
         if (task_created_time + duration) > end_time:
             DEBUG_HALT()
         new_task = Task(bandwidth=task_bandwidth, created_time=task_created_time,
-                        duration=duration, priority=priority, min_bandwidth=task_min_bandwidth)
+                        duration=duration, min_bandwidth=task_min_bandwidth)
+        new_task.priority = priority
         ret.append(new_task)
     return sorted(ret, key=attrgetter('created_time'))
 
@@ -216,9 +242,33 @@ def to_json_file(task_list, out_file):
         json.dump(target_list, fout, indent=4)
 
 
+def from_json_file(in_file: str) -> list:
+    """
+    get task list from JSON file (list of dicts
+    :param in_file: JSON file with list of dicts
+    :return: list of Task objects
+    """
+    ret = []
+    with open(in_file, "r") as fin:
+        list_dicts = json.load(fin)
+    for one_dict in list_dicts:
+        new_task = Task()
+        new_task.from_dict(one_dict)
+        ret.append(new_task)
+    return ret
+
+def compare_lists(src_list, target_list):
+    zipped = list(zip(src_list, target_list))
+    for (i, j) in zipped:
+        if i.to_dict() != j.to_dict():
+            DEBUG_HALT()
+
 if __name__ == "__main__":
     task_list = generate_random_tasks(5, 50)
     json_file = "output.json"
     to_json_file(task_list, json_file)
+    output_list = from_json_file(json_file)
+    print(output_list)
+    compare_lists(task_list, output_list)
     # for task in task_list:
     #     print(task.to_dict())

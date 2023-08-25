@@ -20,3 +20,4 @@ def sort_queue(Q, attrib, reverse=False):
     return deque(sorted(Q, key=attrgetter(attrib), reverse=reverse))
 
 
+DEFAULT_END_TIME = 0xFF

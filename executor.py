@@ -5,7 +5,8 @@ Task executor class
 from collections import deque
 from operator import attrgetter
 
-from taskinprogressmatrix import TaskInProgressMatrix, DEFAULT_END_TIME
+from taskinprogressmatrix import TaskInProgressMatrix
+from utils import DEFAULT_END_TIME
 
 
 class Executor:

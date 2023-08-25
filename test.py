@@ -5,7 +5,7 @@ Driver code
 from heatmap_plot import show_plot
 from task import generate_random_tasks, reset_task_start_time_bandwidth
 from executor import Executor
-from taskinprogressmatrix import DEFAULT_END_TIME
+from utils import DEFAULT_END_TIME
 
 
 def run_task_list(task_generated_list, compress, max_bandwidth=None, start_time=None,

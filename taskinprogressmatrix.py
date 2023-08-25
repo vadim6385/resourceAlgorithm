@@ -6,10 +6,8 @@ from operator import attrgetter
 import numpy as np
 
 # Constants for default end time values
-from utils import DEBUG_HALT
+from utils import DEBUG_HALT, DEFAULT_END_TIME
 from task import TaskStatus
-
-DEFAULT_END_TIME = 0xFF
 
 
 class TaskInProgressMatrix:

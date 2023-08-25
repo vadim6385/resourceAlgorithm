@@ -1,0 +1,62 @@
+[
+    {
+        "id": 2,
+        "bandwidth": 5,
+        "min_bandwidth": 3,
+        "original_bandwidth": 5,
+        "created_time": 42,
+        "actual_start_time": 42,
+        "duration": 81,
+        "actual_end_time": 123,
+        "priority": "ENTERPRISE",
+        "status": "PENDING"
+    },
+    {
+        "id": 5,
+        "bandwidth": 3,
+        "min_bandwidth": 0,
+        "original_bandwidth": 3,
+        "created_time": 53,
+        "actual_start_time": 53,
+        "duration": 146,
+        "actual_end_time": 199,
+        "priority": "REGULAR",
+        "status": "PENDING"
+    },
+    {
+        "id": 1,
+        "bandwidth": 10,
+        "min_bandwidth": 5,
+        "original_bandwidth": 10,
+        "created_time": 73,
+        "actual_start_time": 73,
+        "duration": 83,
+        "actual_end_time": 156,
+        "priority": "REGULAR",
+        "status": "PENDING"
+    },
+    {
+        "id": 4,
+        "bandwidth": 17,
+        "min_bandwidth": 13,
+        "original_bandwidth": 17,
+        "created_time": 134,
+        "actual_start_time": 134,
+        "duration": 103,
+        "actual_end_time": 237,
+        "priority": "REGULAR",
+        "status": "PENDING"
+    },
+    {
+        "id": 3,
+        "bandwidth": 5,
+        "min_bandwidth": 1,
+        "original_bandwidth": 5,
+        "created_time": 140,
+        "actual_start_time": 140,
+        "duration": 81,
+        "actual_end_time": 221,
+        "priority": "REGULAR",
+        "status": "PENDING"
+    }
+]

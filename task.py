@@ -5,6 +5,7 @@ It includes getter and setter methods to access and modify these attributes.
 import random
 from itertools import count
 from operator import attrgetter
+import json
 
 from taskinprogressmatrix import DEFAULT_END_TIME
 from utils import DEBUG_HALT, TaskPriority, TaskStatus
@@ -135,6 +136,21 @@ class Task:
                 self.actual_end_time,
                 self.__priority)
 
+    def to_dict(self):
+        return {
+            'id': self.__id,
+            'bandwidth': self.__bandwidth,
+            'min_bandwidth': self.__min_bandwidth,
+            'original_bandwidth': self.__original_bandwidth,
+            'created_time': self.__created_time,
+            'actual_start_time': self.__actual_start_time,
+            'duration': self.__duration,
+            'actual_end_time': self.actual_end_time,
+            'priority': self.__priority,
+            'status': self.__task_status.name  # Assuming TaskStatus is an Enum
+        }
+
+
 
 def generate_random_tasks(num_tasks, max_bandwidth, start_time=0, end_time=DEFAULT_END_TIME):
     """
@@ -170,3 +186,25 @@ def reset_task_start_time_bandwidth(tasks_list):
     for task in tasks_list:
         task.reset_start_time()
         task.reset_bandwidth()
+
+def to_json_file(task_list, out_file):
+    """
+    get task list, save it in JSON format
+    :param task_list: task input
+    :param out_file: output file name
+    :return: None
+    """
+    target_list = []
+    for task in task_list:
+        task_dict = task.to_dict()
+        target_list.append(task_dict)
+    with open(out_file, "w") as fout:
+        json.dump(target_list, fout, indent=4)
+
+
+if __name__ == "__main__":
+    task_list = generate_random_tasks(5, 50)
+    json_file = "output.json"
+    to_json_file(task_list, json_file)
+    # for task in task_list:
+    #     print(task.to_dict())

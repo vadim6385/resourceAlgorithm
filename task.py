@@ -3,12 +3,26 @@ The class represents a task with attributes for bandwidth, start time, duration,
 It includes getter and setter methods to access and modify these attributes.
 """
 import random
+from enum import IntEnum
 from itertools import count
 from operator import attrgetter
 import json
 
 from taskinprogressmatrix import DEFAULT_END_TIME
-from utils import DEBUG_HALT, TaskPriority, TaskStatus
+from utils import DEBUG_HALT
+
+
+class TaskPriority(IntEnum):
+    REGULAR = 0
+    PREMIUM = 10
+    ENTERPRISE = 20
+
+
+class TaskStatus(IntEnum):
+    PENDING = 0
+    IN_PROGRESS = 1
+    FINISHED = 2
+    DROPPED = 3
 
 
 class InsufficientBandwidthException(Exception):
@@ -126,15 +140,15 @@ class Task:
     def __repr__(self):
         return "Task(id={} bandwidth={}, minimum bandwidth={}, original bandwidth={}, created_time={}, actual start " \
                "time={}, duration={}, actual end time={}, priority={})".format(
-                self.__id,
-                self.__bandwidth,
-                self.__min_bandwidth,
-                self.__original_bandwidth,
-                self.__created_time,
-                self.__actual_start_time,
-                self.__duration,
-                self.actual_end_time,
-                self.__priority)
+                                                                                self.__id,
+                                                                                self.__bandwidth,
+                                                                                self.__min_bandwidth,
+                                                                                self.__original_bandwidth,
+                                                                                self.__created_time,
+                                                                                self.__actual_start_time,
+                                                                                self.__duration,
+                                                                                self.actual_end_time,
+                                                                                self.__priority)
 
     def to_dict(self):
         return {
@@ -149,7 +163,6 @@ class Task:
             'priority': self.__priority,
             'status': self.__task_status.name  # Assuming TaskStatus is an Enum
         }
-
 
 
 def generate_random_tasks(num_tasks, max_bandwidth, start_time=0, end_time=DEFAULT_END_TIME):
@@ -186,6 +199,7 @@ def reset_task_start_time_bandwidth(tasks_list):
     for task in tasks_list:
         task.reset_start_time()
         task.reset_bandwidth()
+
 
 def to_json_file(task_list, out_file):
     """

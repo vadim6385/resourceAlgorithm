@@ -19,11 +19,11 @@ def simple_greedy_algorithm(task_list, total_bandwidth):
     :param total_bandwidth: Total available bandwidth
     :return: List of completed tasks
     """
-    waitingTaskQueue = task_list.copy()
+    waitingTaskQueue = task_list
     processingQueue = []
     completedQueue = []
     current_time = 0
-    while waitingTaskQueue or processingQueue:  # run while there are tasks in operation
+    while waitingTaskQueue or processingQueue:  # run while there are tasks in waiting or operation
         # Sort by priority and then by start time
         waitingTaskQueue = sort_list(waitingTaskQueue, 'priority')
         waitingTaskQueue = sort_list(waitingTaskQueue, 'created_time')

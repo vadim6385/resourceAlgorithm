@@ -24,3 +24,10 @@ class AlgoTester:
             one_task.score = new_score
             total_score += new_score
         self.avg_score = total_score / len(self.task_list)
+
+if __name__ == "__main__":
+    from algorithms import simple_greedy_algorithm
+    task_list = "output.json"
+    tester = AlgoTester(task_list, 50)
+    tester.test(simple_greedy_algorithm)
+    print(f"Average score: {tester.avg_score}")

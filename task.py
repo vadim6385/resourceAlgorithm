@@ -271,7 +271,7 @@ def compare_lists(src_list, target_list):
             DEBUG_HALT()
 
 if __name__ == "__main__":
-    task_list = generate_random_tasks(5, 50)
+    task_list = generate_random_tasks(100, 50)
     json_file = "output.json"
     to_json_file(task_list, json_file)
     output_list = from_json_file(json_file)

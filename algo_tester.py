@@ -30,4 +30,9 @@ if __name__ == "__main__":
     task_list = "output.json"
     tester = AlgoTester(task_list, 50)
     tester.test(simple_greedy_algorithm)
-    print(f"Average score: {tester.avg_score}")
+    print(f"Greedy algorithm average score: {tester.avg_score}")
+    del(tester)
+    from algorithms import greedy_compression_algorithm
+    tester = AlgoTester(task_list, 50)
+    tester.test(greedy_compression_algorithm)
+    print(f"Greedy compression algorithm average score: {tester.avg_score}")

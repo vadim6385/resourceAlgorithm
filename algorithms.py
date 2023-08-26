@@ -93,6 +93,8 @@ def greedy_compression_algorithm(task_list, total_bandwidth):
                     compressed_tasks = []
                     temp_bandwidth = total_bandwidth
                     for running_task in processingQueue:
+                        if running_task.is_compressed:
+                            continue
                         running_task.compress()
                         compressed_tasks.append(running_task)
                         temp_bandwidth += running_task.bandwidth_diff
@@ -106,7 +108,7 @@ def greedy_compression_algorithm(task_list, total_bandwidth):
                     if not compression_success: # if compression did not succeed, decompress compressed tasks
                         for one_comp_task in compressed_tasks:
                             one_comp_task.decompress()
-                        one_task.actual_start_time += 1
+                        one_task.actual_start_time += 1 # advance start time for original task
         for one_task in processingQueue:
             if one_task in waitingTaskQueue:  # remove IN_PROGRESS tasks from waiting queue
                 waitingTaskQueue.remove(one_task)

@@ -98,6 +98,10 @@ class Task:
     def is_compressed(self):
         return self.__bandwidth == self.__min_bandwidth
 
+    @property
+    def bandwidth_diff(self):
+        return self.__original_bandwidth - self.__bandwidth
+
     # Get created time of the task
     @property
     def created_time(self):

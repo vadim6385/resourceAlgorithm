@@ -60,10 +60,6 @@ class Task:
     def status(self, val: TaskStatus):
         self.__task_status = val
 
-    @status.setter
-    def status(self, val: int):
-        self.__task_status = TaskStatus(val)
-
     # Get bandwidth of the task
     @property
     def bandwidth(self):

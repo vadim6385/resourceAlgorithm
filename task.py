@@ -12,9 +12,9 @@ from utils import DEBUG_HALT, DEFAULT_END_TIME
 
 
 class TaskPriority(IntEnum):
-    REGULAR = 0
-    PREMIUM = 10
-    ENTERPRISE = 20
+    REGULAR = 1
+    PREMIUM = 2
+    ENTERPRISE = 3
 
 
 class TaskStatus(IntEnum):
@@ -44,6 +44,17 @@ class Task:
         self.__duration = duration
         self.priority = priority
         self.__task_status = TaskStatus.PENDING
+        self.__score = 100
+
+    # get task score
+    @property
+    def score(self) -> int:
+        return self.__score
+
+    # set task score
+    @score.setter
+    def score(self, val:int) -> None:
+        self.__score = val
 
     # get unique task Id
     @property
@@ -199,7 +210,7 @@ def generate_random_tasks(num_tasks, max_bandwidth, start_time=0, end_time=DEFAU
     for i in range(num_tasks):
         task_bandwidth = random.randint(0, int(max_bandwidth / 2))
         task_min_bandwidth = random.randint(0, task_bandwidth)
-        priority = random.randrange(TaskPriority.REGULAR, TaskPriority.ENTERPRISE + 10, 10)
+        priority = random.randrange(TaskPriority.REGULAR, TaskPriority.ENTERPRISE + 1, 1)
         task_created_time = random.randint(start_time, int(end_time - 1))
         max_duration = end_time - task_created_time
         duration = random.randint(1, max_duration)  # Use max_duration as the upper limit

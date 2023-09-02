@@ -40,6 +40,8 @@ class AlgoTester:
         ret = "Average Score per priority: "
         for one_prio in self.scores_dict.keys():
             ret += "{}:{} ".format(one_prio, self.scores_dict[one_prio][2])
+        ret += ". "
+        ret += f"Total Start Time: {self.time_start}, Total End Time: {self.time_end}"
         return ret
 
 

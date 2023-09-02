@@ -7,10 +7,15 @@ class AlgoTester:
         self.task_list = task.from_json_file(task_list_file)
         self.completed_tasks = []
         self.scores_dict = {}
+        self.time_start = 0
+        self.time_end = 0
 
     def test(self, algo_fp):
         # run the algorithm from given algorithm function
         self.completed_tasks = algo_fp(self.task_list, self.total_bandwidth)
+        # get earliest task scheduled start time and latest task completion time
+        self.time_start = min(one_task.created_time for one_task in self.completed_tasks)
+        self.time_end = max(one_task.actual_end_time for one_task in self.completed_tasks)
         self.rate_tasks() # calculate score for each task
 
     def rate_tasks(self):

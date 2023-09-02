@@ -44,7 +44,7 @@ class Task:
         self.__duration = duration
         self.priority = priority
         self.__task_status = TaskStatus.PENDING
-        self.__score = 100
+        self.__score = 0
 
     # get task score
     @property

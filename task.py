@@ -2,11 +2,11 @@
 The class represents a task with attributes for bandwidth, start time, duration, and priority.
 It includes getter and setter methods to access and modify these attributes.
 """
+import json
 import random
 from enum import IntEnum
 from itertools import count
 from operator import attrgetter
-import json
 
 from utils import DEBUG_HALT, DEFAULT_END_TIME
 
@@ -15,13 +15,6 @@ class TaskPriority(IntEnum):
     REGULAR = 1
     PREMIUM = 2
     ENTERPRISE = 3
-
-
-class TaskStatus(IntEnum):
-    PENDING = 0
-    IN_PROGRESS = 1
-    FINISHED = 2
-    DROPPED = 3
 
 
 class InsufficientBandwidthException(Exception):
@@ -43,7 +36,6 @@ class Task:
         self.__actual_start_time = created_time
         self.__duration = duration
         self.priority = priority
-        self.__task_status = TaskStatus.PENDING
         self.__score = 0
 
     # get task score
@@ -53,23 +45,13 @@ class Task:
 
     # set task score
     @score.setter
-    def score(self, val:int) -> None:
+    def score(self, val: int) -> None:
         self.__score = val
 
     # get unique task Id
     @property
     def id(self):
         return self.__id
-
-    # Get task status
-    @property
-    def status(self) -> TaskStatus:
-        return self.__task_status
-
-    # Set task status
-    @status.setter
-    def status(self, val: TaskStatus):
-        self.__task_status = val
 
     # Get bandwidth of the task
     @property
@@ -148,22 +130,18 @@ class Task:
     def reset_start_time(self):
         self.__actual_start_time = self.__created_time
 
-    # reset task bandwidth to original task bandwidth
-    def reset_bandwidth(self):
-        self.__bandwidth = self.__original_bandwidth
-
     # compress the task to minimal bandwidth
     def compress(self):
         self.__bandwidth = self.__min_bandwidth
 
     # decompress bandwidth
     def decompress(self):
-        self.reset_bandwidth()
+        self.__bandwidth = self.__original_bandwidth
 
     # String representation of the Task object
     def __repr__(self):
         return "Task(id={} bandwidth={}, minimum bandwidth={}, original bandwidth={}, created_time={}, actual start " \
-               "time={}, duration={}, actual end time={}, priority={}, status={})".format(
+               "time={}, duration={}, actual end time={}, priority={})".format(
             self.id,
             self.bandwidth,
             self.min_bandwidth,
@@ -172,8 +150,7 @@ class Task:
             self.actual_start_time,
             self.duration,
             self.actual_end_time,
-            self.priority.name,
-            self.status.name)
+            self.priority.name)
 
     def to_dict(self):
         return {
@@ -185,8 +162,7 @@ class Task:
             'actual_start_time': self.__actual_start_time,
             'duration': self.__duration,
             'actual_end_time': self.actual_end_time,
-            'priority': self.__priority.name, # Assuming TaskPriority is an Enum
-            'status': self.__task_status.name  # Assuming TaskStatus is an Enum
+            'priority': self.__priority.name,  # Assuming TaskPriority is an Enum
         }
 
     def from_dict(self, src_dict):
@@ -268,11 +244,13 @@ def from_json_file(in_file: str) -> list:
         ret.append(new_task)
     return ret
 
+
 def compare_lists(src_list, target_list):
     zipped = list(zip(src_list, target_list))
     for (i, j) in zipped:
         if i.to_dict() != j.to_dict():
             DEBUG_HALT()
+
 
 if __name__ == "__main__":
     task_list = generate_random_tasks(100, 50)

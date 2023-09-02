@@ -1,15 +1,15 @@
-from task import TaskStatus
 from utils import DEBUG_HALT
 
 
-def sort_list(orig_list, property, reverse=False):
+def sort_list(orig_list, prop, is_reverse=False):
     """
     sort list of objects by attribute
+    :param is_reverse: reverse sort
     :param orig_list: list to sort
-    :param property: property to sort by
+    :param prop: property to sort by
     :return: sorted list
     """
-    return sorted(orig_list, key=lambda x: getattr(x, property), reverse=reverse)
+    return sorted(orig_list, key=lambda x: getattr(x, prop), reverse=is_reverse)
 
 
 def simple_greedy_algorithm(task_list, total_bandwidth):
@@ -30,7 +30,6 @@ def simple_greedy_algorithm(task_list, total_bandwidth):
         # Go over processing queue and remove tasks that are done
         for one_task in processingQueue:
             if one_task.actual_end_time < current_time:
-                one_task.status = TaskStatus.FINISHED
                 completedQueue.append(one_task)
                 total_bandwidth += one_task.bandwidth  # return task bandwidth to the bandwidth pool
         for one_task in completedQueue:
@@ -40,7 +39,6 @@ def simple_greedy_algorithm(task_list, total_bandwidth):
         for one_task in waitingTaskQueue:
             if one_task.actual_start_time == current_time:
                 if one_task.bandwidth <= total_bandwidth:
-                    one_task.status = TaskStatus.IN_PROGRESS  # mark task as in progress
                     total_bandwidth -= one_task.bandwidth
                     if total_bandwidth < 0:
                         DEBUG_HALT()  # shouldn't get here
@@ -73,7 +71,6 @@ def greedy_compression_algorithm(task_list, total_bandwidth):
         # Go over processing queue and remove tasks that are done
         for one_task in processingQueue:
             if one_task.actual_end_time < current_time:
-                one_task.status = TaskStatus.FINISHED
                 completedQueue.append(one_task)
                 total_bandwidth += one_task.bandwidth  # return task bandwidth to the bandwidth pool
         for one_task in completedQueue:
@@ -83,12 +80,11 @@ def greedy_compression_algorithm(task_list, total_bandwidth):
         for one_task in waitingTaskQueue:
             if one_task.actual_start_time == current_time:
                 if one_task.bandwidth <= total_bandwidth:
-                    one_task.status = TaskStatus.IN_PROGRESS  # mark task as in progress
                     total_bandwidth -= one_task.bandwidth
                     if total_bandwidth < 0:
                         DEBUG_HALT()  # shouldn't get here
                     processingQueue.append(one_task)  # add task to processing queue
-                else: #try to do compression
+                else:  # try to do compression
                     compression_success = False
                     compressed_tasks = []
                     temp_bandwidth = total_bandwidth
@@ -100,15 +96,14 @@ def greedy_compression_algorithm(task_list, total_bandwidth):
                         temp_bandwidth += running_task.bandwidth_diff
                         if one_task.bandwidth <= temp_bandwidth:
                             total_bandwidth = temp_bandwidth
-                            one_task.status = TaskStatus.IN_PROGRESS  # mark task as in progress
                             total_bandwidth -= one_task.bandwidth
                             processingQueue.append(one_task)
                             compression_success = True
                             break
-                    if not compression_success: # if compression did not succeed, decompress compressed tasks
+                    if not compression_success:  # if compression did not succeed, decompress compressed tasks
                         for one_comp_task in compressed_tasks:
                             one_comp_task.decompress()
-                        one_task.actual_start_time += 1 # advance start time for original task
+                        one_task.actual_start_time += 1  # advance start time for original task
         for one_task in processingQueue:
             if one_task in waitingTaskQueue:  # remove IN_PROGRESS tasks from waiting queue
                 waitingTaskQueue.remove(one_task)

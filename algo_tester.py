@@ -1,4 +1,7 @@
 import task
+import numpy as np
+
+from utils import DEBUG_HALT
 
 
 class AlgoTester:
@@ -17,6 +20,7 @@ class AlgoTester:
         self.time_start = min(one_task.created_time for one_task in self.completed_tasks)
         self.time_end = max(one_task.actual_end_time for one_task in self.completed_tasks)
         self.rate_tasks() # calculate score for each task
+        self.create_task_matrix()
 
     def rate_tasks(self):
         priority_names = [name for name, member in task.TaskPriority.__members__.items()]
@@ -43,6 +47,22 @@ class AlgoTester:
         ret += ". "
         ret += f"Total Start Time: {self.time_start}, Total End Time: {self.time_end}"
         return ret
+
+    def create_task_matrix(self):
+        self.task_matrix = np.zeros((self.total_bandwidth, self.time_end+1), dtype=int)
+        for one_task in self.completed_tasks:
+            for time in range(one_task.actual_start_time, one_task.actual_end_time+1):
+                allocated = False
+                for bw in range(self.total_bandwidth):
+                    if all(self.task_matrix[bw:bw+one_task.bandwidth, time] == 0):
+                        self.task_matrix[bw:bw+one_task.bandwidth, time] = one_task.id
+                        allocated = True
+                        break
+                if not allocated:
+                    DEBUG_HALT()
+        # sort the matrix
+        for time in range(self.time_end+1):
+            self.task_matrix[:, time] = np.sort(self.task_matrix[:, time])
 
 
 if __name__ == "__main__":

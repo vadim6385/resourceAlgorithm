@@ -25,8 +25,8 @@ def simple_greedy_algorithm(task_list, total_bandwidth):
     current_time = 0
     while waitingTaskQueue or processingQueue:  # run while there are tasks in waiting or operation
         # Sort by priority and then by start time
-        waitingTaskQueue = sort_list(waitingTaskQueue, 'priority')
-        waitingTaskQueue = sort_list(waitingTaskQueue, 'created_time')
+        waitingTaskQueue = sort_list(waitingTaskQueue, 'priority', is_reverse=True)
+        waitingTaskQueue = sort_list(waitingTaskQueue, 'actual_start_time')
         # Go over processing queue and remove tasks that are done
         for one_task in processingQueue:
             if one_task.actual_end_time < current_time:
@@ -66,8 +66,8 @@ def greedy_compression_algorithm(task_list, total_bandwidth):
     compression_success = False
     while waitingTaskQueue or processingQueue:  # run while there are tasks in waiting or operation
         # Sort by priority and then by start time
-        waitingTaskQueue = sort_list(waitingTaskQueue, 'priority')
-        waitingTaskQueue = sort_list(waitingTaskQueue, 'created_time')
+        waitingTaskQueue = sort_list(waitingTaskQueue, 'priority', is_reverse=True)
+        waitingTaskQueue = sort_list(waitingTaskQueue, 'actual_start_time')
         # Go over processing queue and remove tasks that are done
         for one_task in processingQueue:
             if one_task.actual_end_time < current_time:

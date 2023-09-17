@@ -109,3 +109,74 @@ def greedy_compression_algorithm(task_list, total_bandwidth):
                 waitingTaskQueue.remove(one_task)
         current_time += 1  # advance time
     return list(completedQueue)
+
+
+def preemptive_scheduling_algorithm(task_list, total_bandwidth):
+    def sort_tasks_by_priority_and_time(task_list):
+        return sorted(task_list, key=lambda x: (x.priority, x.created_time))
+
+    def sort_tasks_by_priority_and_duration(task_list):
+        return sorted(task_list, key=lambda x: (x.priority, x.duration))
+
+    container = []
+    current_weight = 0
+    max_weight = total_bandwidth
+    completed_tasks = []
+    task_stack = []
+    time = 1
+
+    def add_task(task):
+        nonlocal current_weight
+        container.append(task)
+        current_weight += task.bandwidth
+
+    def remove_task(task):
+        nonlocal current_weight
+        container.remove(task)
+        current_weight -= task.bandwidth
+
+    while time < 10:
+        # Update container and move completed tasks
+        for task in container:
+            if task.actual_end_time == time:
+                completed_tasks.append(task)
+                remove_task(task)
+
+        # Add new tasks to the priority queue
+        heapq.heapify(task_list)
+        task_list = sort_tasks_by_priority_and_time(task_list)
+
+        # Preemptive scheduling
+        for task in task_list:
+            if task.actual_start_time <= time:
+                if task.bandwidth <= max_weight - current_weight:
+                    task.actual_start_time = time
+                    add_task(task)
+                    task_list.remove(task)
+                else:
+                    # Try to preempt lower-priority tasks
+                    for running_task in sort_tasks_by_priority_and_duration(container):
+                        if running_task.is_compressed:
+                            continue
+                        running_task.compress()
+                        current_weight += running_task.bandwidth_diff
+                        if task.bandwidth <= max_weight - current_weight:
+                            task.actual_start_time = time
+                            add_task(task)
+                            task_list.remove(task)
+                            break
+                    else:
+                        task.actual_start_time += 1
+
+        # Execute tasks from the stack
+        for task in task_stack:
+            if task.bandwidth <= max_weight - current_weight:
+                task.actual_start_time = time
+                add_task(task)
+                task_stack.remove(task)
+            else:
+                break
+
+        time += 1
+
+    return completed_tasks

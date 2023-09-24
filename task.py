@@ -138,6 +138,11 @@ class Task:
     def decompress(self):
         self.__bandwidth = self.__original_bandwidth
 
+    def __lt__(self, other):
+        if self.priority == other.priority:
+            return self.created_time < other.created_time
+        return self.priority < other.priority
+
     # String representation of the Task object
     def __repr__(self):
         return "Task(id={} bandwidth={}, minimum bandwidth={}, original bandwidth={}, created_time={}, actual start " \

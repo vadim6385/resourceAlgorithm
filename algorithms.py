@@ -1,3 +1,5 @@
+import heapq
+
 from utils import DEBUG_HALT
 
 

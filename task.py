@@ -34,9 +34,11 @@ class Task:
         self.__min_bandwidth = min_bandwidth
         self.__created_time = created_time
         self.__actual_start_time = created_time
-        self.__duration = duration
+        self.__total_duration = duration
+        self.__remaining_duration = self.__total_duration
         self.priority = priority
         self.__score = 0
+        self.__actual_end_time = self.__actual_start_time + self.__total_duration
 
     # get task score
     @property
@@ -99,8 +101,20 @@ class Task:
 
     # Get duration of the task
     @property
-    def duration(self):
-        return self.__duration
+    def total_duration(self):
+        return self.__total_duration
+
+    # Get remaining duration of the task
+    @property
+    def remaining_duration(self):
+        return self.__remaining_duration
+
+    # Set remaining duration
+    @remaining_duration.setter
+    def remaining_duration(self, val):
+        if val < 0:
+            DEBUG_HALT()
+        self.__remaining_duration = val
 
     # Get priority of the task
     @property
@@ -122,9 +136,15 @@ class Task:
         else:
             raise Exception("Task priority accepts only int, string or TaskPriority")
 
+    # get task actual end time
     @property
     def actual_end_time(self):
-        return self.__actual_start_time + self.__duration
+        return self.__actual_end_time
+
+    # set actual end time
+    @actual_end_time.setter
+    def actual_end_time(self, val):
+        self.__actual_end_time = val
 
     # reset task start time to original task start time
     def reset_start_time(self):
@@ -153,7 +173,7 @@ class Task:
             self.original_bandwidth,
             self.created_time,
             self.actual_start_time,
-            self.duration,
+            self.total_duration,
             self.actual_end_time,
             self.priority.name)
 
@@ -165,7 +185,7 @@ class Task:
             'original_bandwidth': self.__original_bandwidth,
             'created_time': self.__created_time,
             'actual_start_time': self.__actual_start_time,
-            'duration': self.__duration,
+            'duration': self.__total_duration,
             'actual_end_time': self.actual_end_time,
             'priority': self.__priority.name,  # Assuming TaskPriority is an Enum
         }
@@ -178,7 +198,7 @@ class Task:
         self.__original_bandwidth = src_dict['original_bandwidth']
         self.__created_time = src_dict['created_time']
         self.__actual_start_time = src_dict['actual_start_time']
-        self.__duration = src_dict['duration']
+        self.__total_duration = src_dict['duration']
         self.priority = src_dict['priority']
 
 

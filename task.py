@@ -17,6 +17,14 @@ class TaskPriority(IntEnum):
     ENTERPRISE = 3
 
 
+class TaskStatus(IntEnum):
+    PENDING = 0
+    IN_PROGRESS = 1
+    FINISHED = 2
+    SUSPENDED = 3
+    DROPPED = 4
+
+
 class InsufficientBandwidthException(Exception):
     def __init__(self, task_id):
         super().__init__("Insufficient bandwidth for task: {}".format(task_id))
@@ -35,10 +43,13 @@ class Task:
         self.__created_time = created_time
         self.__actual_start_time = created_time
         self.__total_duration = duration
-        self.__remaining_duration = self.__total_duration
+        self.__remaining_duration = duration
         self.priority = priority
         self.__score = 0
         self.__actual_end_time = self.__actual_start_time + self.__total_duration
+        self.__duration_changed = False
+        self.__preempted_time = 0
+        self.__task_status = TaskStatus.PENDING
 
     # get task score
     @property
@@ -54,6 +65,16 @@ class Task:
     @property
     def id(self):
         return self.__id
+
+    # Get task status
+    @property
+    def status(self) -> TaskStatus:
+        return self.__task_status
+
+    # Set task status
+    @status.setter
+    def status(self, val: TaskStatus):
+        self.__task_status = val
 
     # Get bandwidth of the task
     @property
@@ -95,6 +116,16 @@ class Task:
     def actual_start_time(self):
         return self.__actual_start_time
 
+    # preempted time
+    @property
+    def preempted_time(self):
+        return self.__preempted_time
+
+    # set preempted time
+    @preempted_time.setter
+    def preempted_time(self, val):
+        self.__preempted_time = val
+
     @actual_start_time.setter
     def actual_start_time(self, val):
         self.__actual_start_time = val
@@ -114,6 +145,7 @@ class Task:
     def remaining_duration(self, val):
         if val < 0:
             DEBUG_HALT()
+        self.__duration_changed = True
         self.__remaining_duration = val
 
     # Get priority of the task
@@ -139,6 +171,8 @@ class Task:
     # get task actual end time
     @property
     def actual_end_time(self):
+        if not self.__duration_changed:
+            return self.__actual_start_time + self.__total_duration
         return self.__actual_end_time
 
     # set actual end time
@@ -198,8 +232,9 @@ class Task:
         self.__original_bandwidth = src_dict['original_bandwidth']
         self.__created_time = src_dict['created_time']
         self.__actual_start_time = src_dict['actual_start_time']
-        self.__total_duration = src_dict['duration']
+        self.__total_duration = self.__remaining_duration = src_dict['duration']
         self.priority = src_dict['priority']
+        self.__actual_end_time = self.__actual_start_time + self.__total_duration
 
 
 def generate_random_tasks(num_tasks, max_bandwidth, start_time=0, end_time=DEFAULT_END_TIME):

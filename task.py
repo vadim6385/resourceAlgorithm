@@ -199,17 +199,25 @@ class Task:
 
     # String representation of the Task object
     def __repr__(self):
-        return "Task(id={} bandwidth={}, minimum bandwidth={}, original bandwidth={}, created_time={}, actual start " \
-               "time={}, duration={}, actual end time={}, priority={})".format(
-            self.id,
-            self.bandwidth,
-            self.min_bandwidth,
-            self.original_bandwidth,
-            self.created_time,
-            self.actual_start_time,
-            self.total_duration,
-            self.actual_end_time,
-            self.priority.name)
+        return (
+            f"Task("
+            f"id={self.id}, "
+            f"bandwidth={self.bandwidth}, "
+            f"min_bandwidth={self.min_bandwidth}, "
+            f"original_bandwidth={self.original_bandwidth}, "
+            f"created_time={self.created_time}, "
+            f"actual_start_time={self.actual_start_time}, "
+            f"total_duration={self.total_duration}, "
+            f"remaining_duration={self.remaining_duration}, "
+            f"actual_end_time={self.actual_end_time}, "
+            f"priority={self.priority.name}, "
+            f"status={self.status.name}, "
+            f"preempted_time={self.preempted_time}, "
+            f"score={self.score}, "
+            f"is_compressed={self.is_compressed}, "
+            f"bandwidth_diff={self.bandwidth_diff}"
+            f")"
+        )
 
     def to_dict(self):
         return {

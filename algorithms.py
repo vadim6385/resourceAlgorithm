@@ -123,77 +123,61 @@ def preemptive_scheduling_algorithm(task_list, total_bandwidth):
     :return: List of completed tasks
     """
     waitingTaskQueue = deque(task_list)
+    waitingTaskQueue = sort_list(waitingTaskQueue, 'priority', is_reverse=True)
+    waitingTaskQueue = sort_list(waitingTaskQueue, 'actual_start_time')
     processingQueue = []
-    completedQueue = []
-    preempted_task_stack = deque()
-    waiting_temp_stack = deque()
+    separateQueue = deque()
+    stack = deque()
     current_time = 0
-    while waitingTaskQueue or processingQueue:  # run while there are tasks in waiting or operation
-        # Sort by priority and then by start time
-        waitingTaskQueue = sort_list(waitingTaskQueue, 'priority', is_reverse=True)
-        waitingTaskQueue = sort_list(waitingTaskQueue, 'actual_start_time')
+
+    while waitingTaskQueue or processingQueue:
         # Go over processing queue and remove tasks that are done
+        tasks_to_remove = []
         for one_task in processingQueue:
-            if one_task.actual_end_time < current_time: # or one_task.remaining_duration == 0:
+            if one_task.actual_end_time < current_time:
                 one_task.status = TaskStatus.FINISHED
-                completedQueue.append(one_task)
-                total_bandwidth += one_task.bandwidth  # return task bandwidth to the bandwidth pool
-        for one_task in completedQueue:
-            if one_task in processingQueue:
-                processingQueue.remove(one_task)
-        # Start running tasks
+                total_bandwidth += one_task.bandwidth
+                tasks_to_remove.append(one_task)
+        for task in tasks_to_remove:
+            processingQueue.remove(task)
+
         while waitingTaskQueue:
             one_task = waitingTaskQueue.pop()
-            if one_task.actual_start_time == current_time or one_task.preempted_time == current_time:
+            if one_task.bandwidth <= total_bandwidth:
+                total_bandwidth -= one_task.bandwidth
+                one_task.status = TaskStatus.IN_PROGRESS
+                processingQueue.append(one_task)
+            else:
+                # Sort processingQueue for removal
+                processingQueue = sort_list(processingQueue, 'priority', is_reverse=False)
+                processingQueue = sort_list(processingQueue, 'remaining_duration', is_reverse=True)
+                for task in processingQueue:
+                    if one_task.bandwidth <= total_bandwidth:
+                        break
+                    if task.priority <= one_task.priority:
+                        processingQueue.remove(task)
+                        stack.append(task)
+                        total_bandwidth += task.bandwidth
                 if one_task.bandwidth <= total_bandwidth:
                     total_bandwidth -= one_task.bandwidth
-                    if total_bandwidth < 0:
-                        DEBUG_HALT()  # shouldn't get here
                     one_task.status = TaskStatus.IN_PROGRESS
-                    processingQueue.append(one_task)  # add task to processing queue
+                    processingQueue.append(one_task)
                 else:
-                    # preempt tasks already in processing
-                    processingQueue = sort_list(processingQueue, 'priority', is_reverse=False)
-                    processingQueue = sort_list(processingQueue, 'remaining_duration', is_reverse=True)
-                    if not processingQueue:
-                        DEBUG_HALT()  # processing queue will always be populated
-                    task_counter = len(processingQueue)
-                    while one_task.bandwidth > total_bandwidth:  # do until enough bandwidth to add the new task
-                        if task_counter == 0:
-                            break  # exit loop if gone over all tasks
-                        removed_task = processingQueue.pop(0)
-                        if removed_task.priority <= one_task.priority:  # if priority is less or more
-                            total_bandwidth += removed_task.bandwidth
-                            removed_task.preempted_time = current_time + 1
-                            removed_task.status = TaskStatus.SUSPENDED
-                            preempted_task_stack.append(removed_task)  # append task to stack
-                            if one_task.bandwidth <= total_bandwidth:  # last check if there is enough bandwidth
-                                total_bandwidth -= one_task.bandwidth
-                                if total_bandwidth < 0:
-                                    DEBUG_HALT()  # shouldn't get here
-                                one_task.status = TaskStatus.IN_PROGRESS
-                                processingQueue.append(one_task)  # add task to processing queue
-                                break
-                        else:
-                            processingQueue.append(removed_task)
-                        task_counter -= 1
-                    if not one_task.status == TaskStatus.IN_PROGRESS:
-                        one_task.actual_start_time += 1
-                        waiting_temp_stack.append(one_task)
+                    separateQueue.appendleft(one_task)
+
+        # Empty the separate queue back into the main queue
+        waitingTaskQueue.extend(separateQueue)
+        separateQueue.clear()
+
+        # Handle the stack
+        while stack:
+            task = stack.pop()
+            if task.bandwidth <= total_bandwidth:
+                total_bandwidth -= task.bandwidth
+                task.status = TaskStatus.IN_PROGRESS
+                processingQueue.append(task)
             else:
-                waiting_temp_stack.append(one_task)
-        # re-add the tasks from waiting temp stack to the waiting queue
-        while waiting_temp_stack:
-            task_to_waiting = waiting_temp_stack.pop()
-            waitingTaskQueue.append(task_to_waiting)
-        # now clean up the removed task stack, and add them back to waiting queue
-        while preempted_task_stack:
-            task_to_waiting = preempted_task_stack.pop()
-            waitingTaskQueue.append(task_to_waiting)
-        current_time += 1  # advance time
-        for one_task in processingQueue:
-            if one_task in waitingTaskQueue:  # remove IN_PROGRESS tasks from waiting queue
-                waitingTaskQueue.remove(one_task)
-            # decrease remaining duration for tasks in progress
-            # one_task.remaining_duration -= 1
-    return list(completedQueue)
+                separateQueue.appendleft(task)
+
+        current_time += 1
+    return [task for task in task_list if task.status == TaskStatus.FINISHED]

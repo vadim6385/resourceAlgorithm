@@ -135,6 +135,8 @@ def preemptive_scheduling_algorithm(task_list, total_bandwidth):
         if total_bandwidth < 0: # should never fall below zero
             DEBUG_HALT()
         new_task.status = TaskStatus.IN_PROGRESS
+        if new_task in waitingTaskQueue:
+            waitingTaskQueue.remove(new_task)
         if re_add:
             processingQueue.append(new_task)
 
@@ -150,40 +152,47 @@ def preemptive_scheduling_algorithm(task_list, total_bandwidth):
         new_task_added = False
         for one_task in processingQueue:
             if one_task.priority <= new_task.priority:
+                preemptedTempQueue.append(one_task)
                 total_bandwidth += one_task.bandwidth
                 if total_bandwidth > orig_bandwidth:
                     DEBUG_HALT()
-                preemptedTempQueue.append(one_task)
-                if total_bandwidth > new_task.bandwidth:
+                if new_task.bandwidth <= total_bandwidth:
                     add_task_to_processing_queue(new_task)
                     new_task_added = True
                     break
         while preemptedTempQueue:
-            one_task = preemptedTempQueue.pop(0)
+            one_task = preemptedTempQueue.pop(-1)
             if new_task_added:
                 if not one_task in waitingTaskQueue:
                     one_task.preempt(current_time)
                     waitingTaskQueue.append(one_task)
+                else:
+                    DEBUG_HALT()
             else:
                 add_task_to_processing_queue(one_task, re_add=False)
         return new_task_added
+
+    def finish_task(one_task):
+        nonlocal total_bandwidth
+        one_task.status = TaskStatus.FINISHED
+        completedQueue.append(one_task)
+        processingQueue.remove(one_task)
+        total_bandwidth += one_task.bandwidth  # return new_task bandwidth to the bandwidth pool
+        if total_bandwidth > orig_bandwidth:
+            DEBUG_HALT()
+
     while waitingTaskQueue or processingQueue:  # run while there are tasks in waiting or operation
         # Sort by priority and then by start time
+        if total_bandwidth > orig_bandwidth:
+            DEBUG_HALT()
         waitingTaskQueue = sort_list(waitingTaskQueue, 'priority', is_reverse=True)
         waitingTaskQueue = sort_list(waitingTaskQueue, 'actual_start_time')
         # Go over processing queue and remove tasks that are done
         for one_task in processingQueue:
             # decrease remaining duration for tasks in progress
             one_task.remaining_duration -= 1
-            if one_task.actual_end_time < current_time or one_task.remaining_duration == 0:
-                one_task.status = TaskStatus.FINISHED
-                completedQueue.append(one_task)
-                total_bandwidth += one_task.bandwidth  # return new_task bandwidth to the bandwidth pool
-                if total_bandwidth > orig_bandwidth:
-                    DEBUG_HALT()
-        for one_task in completedQueue:
-            if one_task in processingQueue:
-                processingQueue.remove(one_task)
+            if one_task.remaining_duration == 0:
+                finish_task(one_task)
         # Start running tasks
         for one_task in waitingTaskQueue:
             if one_task.actual_start_time == current_time or one_task.preempted_time == current_time:

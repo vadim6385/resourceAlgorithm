@@ -125,7 +125,7 @@ def preemptive_scheduling_algorithm(task_list, total_bandwidth):
     waitingTaskQueue = deque(task_list)
     processingQueue = []
     completedQueue = []
-
+    orig_bandwidth = total_bandwidth
     current_time = 0
 
     def add_task_to_processing_queue(new_task, re_add=True):
@@ -143,14 +143,16 @@ def preemptive_scheduling_algorithm(task_list, total_bandwidth):
         nonlocal processingQueue
         nonlocal total_bandwidth
         nonlocal current_time
+        nonlocal orig_bandwidth
         preemptedTempQueue = []
         processingQueue = sort_list(processingQueue, 'priority', is_reverse=False)
         processingQueue = sort_list(processingQueue, 'remaining_duration', is_reverse=True)
         new_task_added = False
         for one_task in processingQueue:
             if one_task.priority <= new_task.priority:
-                one_task.status = TaskStatus.SUSPENDED
                 total_bandwidth += one_task.bandwidth
+                if total_bandwidth > orig_bandwidth:
+                    DEBUG_HALT()
                 preemptedTempQueue.append(one_task)
                 if total_bandwidth > new_task.bandwidth:
                     add_task_to_processing_queue(new_task)
@@ -160,7 +162,7 @@ def preemptive_scheduling_algorithm(task_list, total_bandwidth):
             one_task = preemptedTempQueue.pop(0)
             if new_task_added:
                 if not one_task in waitingTaskQueue:
-                    one_task.preempted_time = current_time + 1
+                    one_task.preempt(current_time)
                     waitingTaskQueue.append(one_task)
             else:
                 add_task_to_processing_queue(one_task, re_add=False)
@@ -177,6 +179,8 @@ def preemptive_scheduling_algorithm(task_list, total_bandwidth):
                 one_task.status = TaskStatus.FINISHED
                 completedQueue.append(one_task)
                 total_bandwidth += one_task.bandwidth  # return new_task bandwidth to the bandwidth pool
+                if total_bandwidth > orig_bandwidth:
+                    DEBUG_HALT()
         for one_task in completedQueue:
             if one_task in processingQueue:
                 processingQueue.remove(one_task)

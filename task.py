@@ -48,8 +48,9 @@ class Task:
         self.__score = 0
         self.__actual_end_time = self.__actual_start_time + self.__total_duration
         self.__duration_changed = False
-        self.__preempted_time = 0
+        self.__preempted_time = self.__actual_start_time
         self.__task_status = TaskStatus.PENDING
+        self.__is_preempted = False
 
     # get task score
     @property
@@ -129,6 +130,7 @@ class Task:
     @actual_start_time.setter
     def actual_start_time(self, val):
         self.__actual_start_time = val
+        self.__preempted_time = self.__actual_start_time
 
     # Get duration of the task
     @property
@@ -192,6 +194,11 @@ class Task:
     def decompress(self):
         self.__bandwidth = self.__original_bandwidth
 
+    def preempt(self, current_time):
+        self.__is_preempted = True
+        self.__preempted_time = current_time + 1
+        self.__task_status = TaskStatus.PENDING
+
     def __lt__(self, other):
         if self.priority == other.priority:
             return self.created_time < other.created_time
@@ -240,6 +247,7 @@ class Task:
         self.__original_bandwidth = src_dict['original_bandwidth']
         self.__created_time = src_dict['created_time']
         self.__actual_start_time = src_dict['actual_start_time']
+        self.__preempted_time = src_dict['actual_start_time']
         self.__total_duration = self.__remaining_duration = src_dict['duration']
         self.priority = src_dict['priority']
         self.__actual_end_time = self.__actual_start_time + self.__total_duration

@@ -124,100 +124,107 @@ def preemptive_scheduling_algorithm(task_list, total_bandwidth):
     """
 
     def group_tasks_by_time():
+        """Group tasks by their start time and add them to the waiting queue."""
         nonlocal task_list
         for one_task in task_list:
             add_task_to_waiting_queue(one_task)
 
     def add_task_to_waiting_queue(one_task):
+        """Add a task to the waiting queue at its start time."""
         nonlocal waitingTaskQueue
         start_time = one_task.actual_start_time
-        try:
-            one_time_queue = waitingTaskQueue[start_time]
-        except KeyError:
-            one_time_queue = deque()
-            waitingTaskQueue[start_time] = one_time_queue
-        one_time_queue.append(one_task)
+        if start_time not in waitingTaskQueue:
+            waitingTaskQueue[start_time] = deque()
+        waitingTaskQueue[start_time].append(one_task)
 
     def add_task_to_processing_queue(new_task):
-        # add new_task to processing queue
+        """Add a task to the processing queue and deduct its bandwidth from the total."""
         nonlocal total_bandwidth, processingQueue
         total_bandwidth -= new_task.bandwidth
-        if total_bandwidth < 0:  # should never fall below zero
+        if total_bandwidth < 0:  # Bandwidth should not fall below zero
             DEBUG_HALT()
         new_task.status = TaskStatus.IN_PROGRESS
         processingQueue.append(new_task)
 
     def remove_task_from_processing_queue(task_to_remove=None):
-        """remove task from processing queue and re-add bandwidth"""
+        """Remove task from processing queue and re-add its bandwidth."""
         nonlocal total_bandwidth, processingQueue
         if task_to_remove:
             processingQueue.remove(task_to_remove)
         else:
             task_to_remove = processingQueue.pop()
         total_bandwidth += task_to_remove.bandwidth
-        if total_bandwidth > orig_bandwidth:
+        if total_bandwidth > orig_bandwidth:  # Bandwidth should not exceed original
             DEBUG_HALT()
         return task_to_remove
 
     def preempt_tasks_in_processing_queue(new_task):
-        # preempt tasks already in processing
+        """
+        Preempt tasks in the processing queue if necessary to make room for a new task.
+        Tasks are preempted based on their priority and remaining duration.
+        """
         nonlocal processingQueue, waitingTaskQueue, total_bandwidth, current_time
         preemptedTempQueue = deque()
+        # Sort tasks by priority and remaining duration for preemption
         processingQueue = sort_list(processingQueue, 'priority', is_reverse=False)
         processingQueue = sort_list(processingQueue, 'remaining_duration', is_reverse=True)
         new_task_added = False
-        for one_task_1 in processingQueue:
-            if one_task_1.priority <= new_task.priority:
-                remove_task_from_processing_queue(one_task_1)
-                preemptedTempQueue.append(one_task_1)
+        for one_task in processingQueue:
+            if one_task.priority <= new_task.priority:
+                remove_task_from_processing_queue(one_task)
+                preemptedTempQueue.append(one_task)
                 if new_task.bandwidth <= total_bandwidth:
                     add_task_to_processing_queue(new_task)
                     new_task_added = True
                     break
         while preemptedTempQueue:
-            one_task_1 = preemptedTempQueue.pop()
+            one_task = preemptedTempQueue.pop()
             if new_task_added:
-                one_task_1.preempt(current_time)
-                add_task_to_waiting_queue(one_task_1)
+                one_task.preempt(current_time)
+                add_task_to_waiting_queue(one_task)
             else:
-                add_task_to_processing_queue(one_task_1)
+                add_task_to_processing_queue(one_task)
         return new_task_added
 
     def finish_task(one_task):
+        """Finish a task and move it to the completed queue."""
         nonlocal completedQueue
         one_task.status = TaskStatus.FINISHED
         remove_task_from_processing_queue(one_task)
         completedQueue.append(one_task)
 
-    waitingTaskQueue = {}
+    waitingTaskQueue = {}  # Initialize waiting queue grouped by start time
     group_tasks_by_time()
-    processingQueue = []
-    completedQueue = []
-    orig_bandwidth = total_bandwidth
+    processingQueue = []  # Initialize processing queue
+    completedQueue = []  # Initialize completed tasks queue
+    orig_bandwidth = total_bandwidth  # Store original bandwidth
     current_time = 0
 
     while waitingTaskQueue or processingQueue:
-        # Go over processing queue and remove tasks that are done
+        # Remove tasks that are done from the processing queue
         for one_task in processingQueue:
-            # decrease remaining duration for tasks in progress
+            # Decrease remaining duration for tasks in progress
             one_task.remaining_duration -= 1
             if one_task.remaining_duration == 0:
                 finish_task(one_task)
 
+        # Process tasks at the current time
         try:
             current_time = sorted(waitingTaskQueue.keys())[0]
+            one_queue = waitingTaskQueue[current_time]
+            one_queue = deque(sort_list(one_queue, 'priority', is_reverse=True))
+            while one_queue:
+                one_task = one_queue.popleft()
+                if one_task.bandwidth <= total_bandwidth:
+                    add_task_to_processing_queue(one_task)
+                else:
+                    if not preempt_tasks_in_processing_queue(one_task):
+                        # If task wasn't added to processing, increment its start time and requeue
+                        one_task.actual_start_time += 1
+                        add_task_to_waiting_queue(one_task)
+            # Remove the processed time slice from the waiting queue
+            del waitingTaskQueue[current_time]
         except IndexError:
-            continue
-        one_queue = waitingTaskQueue[current_time]
-        one_queue = deque(sort_list(one_queue, 'priority', is_reverse=True))
-        while one_queue:
-            one_task = one_queue.popleft()
-            if one_task.bandwidth <= total_bandwidth:
-                add_task_to_processing_queue(one_task)
-            else:
-                if not preempt_tasks_in_processing_queue(one_task):
-                    one_task.actual_start_time += 1
-                    add_task_to_waiting_queue(one_task)
-        del waitingTaskQueue[current_time]
+            continue  # No tasks at the current time, move forward
 
     return list(completedQueue)

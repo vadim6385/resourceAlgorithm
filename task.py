@@ -197,6 +197,7 @@ class Task:
     def preempt(self, current_time):
         self.__is_preempted = True
         self.__preempted_time = current_time + 1
+        self.__actual_start_time = current_time + 1
         self.__task_status = TaskStatus.PENDING
 
     def __lt__(self, other):

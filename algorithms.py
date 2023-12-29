@@ -184,7 +184,7 @@ def preemptive_scheduling_algorithm(task_list, total_bandwidth):
         processingQueue = sort_list(processingQueue, 'remaining_duration', is_reverse=True)
         new_task_added = False
         for one_task in processingQueue:
-            if one_task.priority <= new_task.priority:
+            if one_task.priority < new_task.priority:
                 remove_task_from_processing_queue(one_task)
                 preemptedTempQueue.append(one_task)
                 if new_task.bandwidth <= total_bandwidth:

@@ -1,6 +1,6 @@
-import task
 import numpy as np
 
+import task
 from heatmap_plot import TaskHeatmap
 from utils import DEBUG_HALT
 
@@ -96,18 +96,21 @@ class AlgoTester:
 if __name__ == "__main__":
     task_list = "output.json"
     from algorithms import simple_greedy_algorithm
+
     tester = AlgoTester(task_list, 50)
     tester.test(simple_greedy_algorithm)
     print(f"Greedy algorithm average score: {tester.avg_score_per_priority_str()}")
     tester.show_heatmap_plot()
     del (tester)
     from algorithms import greedy_compression_algorithm
+
     tester = AlgoTester(task_list, 50)
     tester.test(greedy_compression_algorithm)
     print(f"Greedy compression algorithm average score: {tester.avg_score_per_priority_str()}")
     tester.show_heatmap_plot()
     del (tester)
     from algorithms import preemptive_scheduling_algorithm
+
     tester = AlgoTester(task_list, 50)
     tester.test(preemptive_scheduling_algorithm)
     print(f"Greedy compression algorithm average score: {tester.avg_score_per_priority_str()}")

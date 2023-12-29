@@ -1,4 +1,3 @@
-import heapq
 from collections import deque
 
 from task import TaskStatus
@@ -226,7 +225,7 @@ def preemptive_scheduling_algorithm(task_list, total_bandwidth):
         # Process tasks at the current time
         try:
             current_time = sorted(waitingTaskQueue.keys())[0]
-            one_queue = waitingTaskQueue.pop(current_time) # Pop the processed time slice from the waiting queue
+            one_queue = waitingTaskQueue.pop(current_time)  # Pop the processed time slice from the waiting queue
             one_queue = deque(sort_list(one_queue, 'priority', is_reverse=True))
             while one_queue:
                 one_task = one_queue.popleft()
@@ -238,7 +237,7 @@ def preemptive_scheduling_algorithm(task_list, total_bandwidth):
                         one_task.actual_start_time += 1
                         add_task_to_waiting_queue(one_task)
         except IndexError:
-            current_time += 1 # advance current time
+            current_time += 1  # advance current time
             continue  # No tasks at the current time, move forward
 
     # check if there are lost tasks

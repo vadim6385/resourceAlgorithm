@@ -106,6 +106,7 @@ if __name__ == "__main__":
     # tester.test(greedy_compression_algorithm)
     # print(f"Greedy compression algorithm average score: {tester.avg_score_per_priority_str()}")
     # tester.show_heatmap_plot()
+    # del (tester)
     from algorithms import preemptive_scheduling_algorithm
     tester = AlgoTester(task_list, 50)
     tester.test(preemptive_scheduling_algorithm)

@@ -16,6 +16,20 @@ def sort_list(orig_list, prop, is_reverse=False):
     return sorted(orig_list, key=lambda x: getattr(x, prop), reverse=is_reverse)
 
 
+def compare_lists(list1, list2):
+    """
+    Compare two lists and return a set of differences.
+    :param list1: First list to be compared.
+    :param list2: Second list to be compared.
+    :return: A set containing differences between the two lists.
+    """
+    set1 = set(list1)
+    set2 = set(list2)
+    # Find the differences
+    diff_set = set1.symmetric_difference(set2)
+    return diff_set
+
+
 def simple_greedy_algorithm(task_list, total_bandwidth):
     """
     Execute tasks using a simple greedy algorithm.
@@ -228,5 +242,10 @@ def preemptive_scheduling_algorithm(task_list, total_bandwidth):
         except IndexError:
             current_time += 1 # advance current time
             continue  # No tasks at the current time, move forward
+
+    # check if there are lost tasks
+    diff_list = compare_lists(task_list, completedQueue)
+    if diff_list:
+        DEBUG_HALT()
 
     return list(completedQueue)

@@ -17,6 +17,14 @@ class TaskPriority(IntEnum):
     ENTERPRISE = 3
 
 
+class TaskStatus(IntEnum):
+    PENDING = 0
+    IN_PROGRESS = 1
+    FINISHED = 2
+    SUSPENDED = 3
+    DROPPED = 4
+
+
 class InsufficientBandwidthException(Exception):
     def __init__(self, task_id):
         super().__init__("Insufficient bandwidth for task: {}".format(task_id))
@@ -34,9 +42,15 @@ class Task:
         self.__min_bandwidth = min_bandwidth
         self.__created_time = created_time
         self.__actual_start_time = created_time
-        self.__duration = duration
+        self.__total_duration = duration
+        self.__remaining_duration = duration
         self.priority = priority
         self.__score = 0
+        self.__actual_end_time = self.__actual_start_time + self.__total_duration
+        self.__duration_changed = False
+        self.__preempted_time = self.__actual_start_time
+        self.__task_status = TaskStatus.PENDING
+        self.__is_preempted = False
 
     # get task score
     @property
@@ -52,6 +66,16 @@ class Task:
     @property
     def id(self):
         return self.__id
+
+    # Get task status
+    @property
+    def status(self) -> TaskStatus:
+        return self.__task_status
+
+    # Set task status
+    @status.setter
+    def status(self, val: TaskStatus):
+        self.__task_status = val
 
     # Get bandwidth of the task
     @property
@@ -93,14 +117,38 @@ class Task:
     def actual_start_time(self):
         return self.__actual_start_time
 
+    # preempted time
+    @property
+    def preempted_time(self):
+        return self.__preempted_time
+
+    # set preempted time
+    @preempted_time.setter
+    def preempted_time(self, val):
+        self.__preempted_time = val
+
     @actual_start_time.setter
     def actual_start_time(self, val):
         self.__actual_start_time = val
+        self.__preempted_time = self.__actual_start_time
 
     # Get duration of the task
     @property
-    def duration(self):
-        return self.__duration
+    def total_duration(self):
+        return self.__total_duration
+
+    # Get remaining duration of the task
+    @property
+    def remaining_duration(self):
+        return self.__remaining_duration
+
+    # Set remaining duration
+    @remaining_duration.setter
+    def remaining_duration(self, val):
+        if val < 0:
+            DEBUG_HALT()
+        self.__duration_changed = True
+        self.__remaining_duration = val
 
     # Get priority of the task
     @property
@@ -122,9 +170,17 @@ class Task:
         else:
             raise Exception("Task priority accepts only int, string or TaskPriority")
 
+    # get task actual end time
     @property
     def actual_end_time(self):
-        return self.__actual_start_time + self.__duration
+        if not self.__duration_changed:
+            return self.__actual_start_time + self.__total_duration
+        return self.__actual_end_time
+
+    # set actual end time
+    @actual_end_time.setter
+    def actual_end_time(self, val):
+        self.__actual_end_time = val
 
     # reset task start time to original task start time
     def reset_start_time(self):
@@ -138,19 +194,38 @@ class Task:
     def decompress(self):
         self.__bandwidth = self.__original_bandwidth
 
+    def preempt(self, current_time):
+        self.__is_preempted = True
+        self.__preempted_time = current_time + 1
+        self.__actual_start_time = current_time + 1
+        self.__task_status = TaskStatus.PENDING
+
+    def __lt__(self, other):
+        if self.priority == other.priority:
+            return self.created_time < other.created_time
+        return self.priority < other.priority
+
     # String representation of the Task object
     def __repr__(self):
-        return "Task(id={} bandwidth={}, minimum bandwidth={}, original bandwidth={}, created_time={}, actual start " \
-               "time={}, duration={}, actual end time={}, priority={})".format(
-            self.id,
-            self.bandwidth,
-            self.min_bandwidth,
-            self.original_bandwidth,
-            self.created_time,
-            self.actual_start_time,
-            self.duration,
-            self.actual_end_time,
-            self.priority.name)
+        return (
+            f"Task("
+            f"id={self.id}, "
+            f"bandwidth={self.bandwidth}, "
+            f"min_bandwidth={self.min_bandwidth}, "
+            f"original_bandwidth={self.original_bandwidth}, "
+            f"created_time={self.created_time}, "
+            f"actual_start_time={self.actual_start_time}, "
+            f"total_duration={self.total_duration}, "
+            f"remaining_duration={self.remaining_duration}, "
+            f"actual_end_time={self.actual_end_time}, "
+            f"priority={self.priority.name}, "
+            f"status={self.status.name}, "
+            f"preempted_time={self.preempted_time}, "
+            f"score={self.score}, "
+            f"is_compressed={self.is_compressed}, "
+            f"bandwidth_diff={self.bandwidth_diff}"
+            f")"
+        )
 
     def to_dict(self):
         return {
@@ -160,7 +235,7 @@ class Task:
             'original_bandwidth': self.__original_bandwidth,
             'created_time': self.__created_time,
             'actual_start_time': self.__actual_start_time,
-            'duration': self.__duration,
+            'duration': self.__total_duration,
             'actual_end_time': self.actual_end_time,
             'priority': self.__priority.name,  # Assuming TaskPriority is an Enum
         }
@@ -173,8 +248,10 @@ class Task:
         self.__original_bandwidth = src_dict['original_bandwidth']
         self.__created_time = src_dict['created_time']
         self.__actual_start_time = src_dict['actual_start_time']
-        self.__duration = src_dict['duration']
+        self.__preempted_time = src_dict['actual_start_time']
+        self.__total_duration = self.__remaining_duration = src_dict['duration']
         self.priority = src_dict['priority']
+        self.__actual_end_time = self.__actual_start_time + self.__total_duration
 
 
 def generate_random_tasks(num_tasks, max_bandwidth, start_time=0, end_time=DEFAULT_END_TIME):

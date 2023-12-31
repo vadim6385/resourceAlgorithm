@@ -1,6 +1,7 @@
 import numpy as np
 
 import task
+import task_gen
 from heatmap_plot import TaskHeatmap
 from utils import DEBUG_HALT
 
@@ -10,7 +11,7 @@ class AlgoTester:
         # Initialize the task matrix, total bandwidth, and task list from a JSON file
         self.task_matrix = None
         self.total_bandwidth = total_bandwidth
-        self.task_list = task.from_json_file(task_list_file)
+        self.task_list = task_gen.from_json_file(task_list_file)
         self.completed_tasks = []
         self.scores_dict = {}
         self.time_start = 0

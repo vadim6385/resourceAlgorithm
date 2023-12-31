@@ -108,9 +108,58 @@ def gen_tasks_lowest_priority_first(num_tasks, max_bandwidth, start_time=0, end_
                                            priority=TaskPriority.ENTERPRISE, sort_tasks=True)
 
     # Return a combined list of tasks, starting with the lowest priority (regular) to the highest (enterprise)
-    return reg_tasks_list + prem_tasks_list + ent_tasks_list
+    return sorted(reg_tasks_list + prem_tasks_list + ent_tasks_list, key=attrgetter('created_time'))
+
+
+def gen_tasks_reg_and_prem_first_ent_last(num_tasks, max_bandwidth, start_time=0, end_time=DEFAULT_END_TIME):
+    """
+    generate tasks as:
+    lowest and premium priority first, enterprise priority second
+    :param num_tasks: number of tasks to generate
+    :param max_bandwidth: maximum bandwidth for the task
+    :param start_time: global task start time
+    :param end_time: global task end time
+    :return: combined list of tasks, starting with the lowest priority (regular) to the highest (enterprise)
+    """
+    # Divide the number of tasks equally among the three priority levels.
+    num_tasks_ent_prio = num_tasks_prem_prio = int(num_tasks / len(TaskPriority))
+    num_tasks_reg_prio = num_tasks - num_tasks_ent_prio - num_tasks_prem_prio  # Remainder goes to regular priority
+
+    # Define time intervals for each priority level tasks.
+    start_time_reg_prem_prio = start_time # Start time for regular and premium priority tasks
+    end_time_reg_prem_prio = int(end_time * (2/len(TaskPriority))) # End time for regular and premium priority tasks
+    start_time_ent_prio = end_time_reg_prem_prio # Start time for enterprise priority tasks after regular and premium tasks
+    end_time_ent_prio = end_time # End time for enterprise priority tasks after regular and premium tasks
+
+    # Generate a list of random tasks for each priority type
+    # Each list is sorted by some criterion within generate_random_tasks function
+
+    reg_tasks_list = generate_random_tasks(num_tasks=num_tasks_reg_prio, max_bandwidth=max_bandwidth,
+                                           start_time=start_time_reg_prem_prio, end_time=end_time_reg_prem_prio,
+                                           priority=TaskPriority.REGULAR, sort_tasks=True)
+    prem_tasks_list = generate_random_tasks(num_tasks=num_tasks_prem_prio, max_bandwidth=max_bandwidth,
+                                            start_time=start_time_reg_prem_prio, end_time=end_time_reg_prem_prio,
+                                            priority=TaskPriority.PREMIUM, sort_tasks=True)
+    ent_tasks_list = generate_random_tasks(num_tasks=num_tasks_ent_prio, max_bandwidth=max_bandwidth,
+                                           start_time=start_time_ent_prio, end_time=end_time_ent_prio,
+                                           priority=TaskPriority.ENTERPRISE, sort_tasks=True)
+
+    # Return a combined list of tasks, starting with the lowest priority (regular) to the highest (enterprise)
+    return sorted(reg_tasks_list + prem_tasks_list + ent_tasks_list, key=attrgetter('created_time'))
 
 
 if __name__ == "__main__":
-    task_list_b = gen_tasks_lowest_priority_first(num_tasks=1000, max_bandwidth=50, end_time=DEFAULT_END_TIME)
+    num_tasks = 1000
+    max_bandwidth = 50
+    start_time = 0
+    end_time = DEFAULT_END_TIME
+
+    # generate lots of tasks with regular+premium priority first, then enterprise
+    task_list_a = gen_tasks_reg_and_prem_first_ent_last(num_tasks=num_tasks, max_bandwidth=max_bandwidth,
+                                                        start_time=start_time, end_time=end_time)
+    to_json_file(task_list_a, "task_list_a.json")
+
+    # generate lots of tasks with regular priority first, premium priority second, then enterprise
+    task_list_b = gen_tasks_lowest_priority_first(num_tasks=num_tasks, max_bandwidth=max_bandwidth,
+                                                        start_time=start_time, end_time=end_time)
     to_json_file(task_list_b, "task_list_b.json")

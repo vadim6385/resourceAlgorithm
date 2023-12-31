@@ -182,10 +182,6 @@ class Task:
     def actual_end_time(self, val):
         self.__actual_end_time = val
 
-    # reset task start time to original task start time
-    def reset_start_time(self):
-        self.__actual_start_time = self.__created_time
-
     # compress the task to minimal bandwidth
     def compress(self):
         self.__bandwidth = self.__min_bandwidth
@@ -199,11 +195,6 @@ class Task:
         self.__preempted_time = current_time + 1
         self.__actual_start_time = current_time + 1
         self.__task_status = TaskStatus.PENDING
-
-    def __lt__(self, other):
-        if self.priority == other.priority:
-            return self.created_time < other.created_time
-        return self.priority < other.priority
 
     # String representation of the Task object
     def __repr__(self):
@@ -278,17 +269,6 @@ def generate_random_tasks(num_tasks, max_bandwidth, start_time=0, end_time=DEFAU
         new_task.priority = priority
         ret.append(new_task)
     return sorted(ret, key=attrgetter('created_time'))
-
-
-def reset_task_start_time_bandwidth(tasks_list):
-    """
-    reset start time and bandwidth for tasks
-    :param tasks: tasks to reset
-    :return: None
-    """
-    for task in tasks_list:
-        task.reset_start_time()
-        task.reset_bandwidth()
 
 
 def to_json_file(task_list, out_file):

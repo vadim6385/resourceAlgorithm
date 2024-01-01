@@ -2,13 +2,11 @@
 The class represents a task with attributes for bandwidth, start time, duration, and priority.
 It includes getter and setter methods to access and modify these attributes.
 """
-import json
-import random
 from enum import IntEnum
 from itertools import count
-from operator import attrgetter
 
-from utils import DEBUG_HALT, DEFAULT_END_TIME
+
+from utils import DEBUG_HALT
 
 
 class TaskPriority(IntEnum):
@@ -182,10 +180,6 @@ class Task:
     def actual_end_time(self, val):
         self.__actual_end_time = val
 
-    # reset task start time to original task start time
-    def reset_start_time(self):
-        self.__actual_start_time = self.__created_time
-
     # compress the task to minimal bandwidth
     def compress(self):
         self.__bandwidth = self.__min_bandwidth
@@ -199,11 +193,6 @@ class Task:
         self.__preempted_time = current_time + 1
         self.__actual_start_time = current_time + 1
         self.__task_status = TaskStatus.PENDING
-
-    def __lt__(self, other):
-        if self.priority == other.priority:
-            return self.created_time < other.created_time
-        return self.priority < other.priority
 
     # String representation of the Task object
     def __repr__(self):
@@ -252,89 +241,3 @@ class Task:
         self.__total_duration = self.__remaining_duration = src_dict['duration']
         self.priority = src_dict['priority']
         self.__actual_end_time = self.__actual_start_time + self.__total_duration
-
-
-def generate_random_tasks(num_tasks, max_bandwidth, start_time=0, end_time=DEFAULT_END_TIME):
-    """
-    generate queue of random tasks
-    :param num_tasks: number of tasks to generate
-    :param max_bandwidth: maximum bandwidth for the task
-    :param start_time: global task start time
-    :param end_time: global task end time
-    :return: list of generated tasks
-    """
-    ret = []
-    for i in range(num_tasks):
-        task_bandwidth = random.randint(0, int(max_bandwidth / 2))
-        task_min_bandwidth = random.randint(0, task_bandwidth)
-        priority = random.randrange(TaskPriority.REGULAR, TaskPriority.ENTERPRISE + 1, 1)
-        task_created_time = random.randint(start_time, int(end_time - 1))
-        max_duration = end_time - task_created_time
-        duration = random.randint(1, max_duration)  # Use max_duration as the upper limit
-        if (task_created_time + duration) > end_time:
-            DEBUG_HALT()
-        new_task = Task(bandwidth=task_bandwidth, created_time=task_created_time,
-                        duration=duration, min_bandwidth=task_min_bandwidth)
-        new_task.priority = priority
-        ret.append(new_task)
-    return sorted(ret, key=attrgetter('created_time'))
-
-
-def reset_task_start_time_bandwidth(tasks_list):
-    """
-    reset start time and bandwidth for tasks
-    :param tasks: tasks to reset
-    :return: None
-    """
-    for task in tasks_list:
-        task.reset_start_time()
-        task.reset_bandwidth()
-
-
-def to_json_file(task_list, out_file):
-    """
-    get task list, save it in JSON format
-    :param task_list: task input
-    :param out_file: output file name
-    :return: None
-    """
-    target_list = []
-    for task in task_list:
-        task_dict = task.to_dict()
-        target_list.append(task_dict)
-    with open(out_file, "w") as fout:
-        json.dump(target_list, fout, indent=4)
-
-
-def from_json_file(in_file: str) -> list:
-    """
-    get task list from JSON file (list of dicts
-    :param in_file: JSON file with list of dicts
-    :return: list of Task objects
-    """
-    ret = []
-    with open(in_file, "r") as fin:
-        list_dicts = json.load(fin)
-    for one_dict in list_dicts:
-        new_task = Task()
-        new_task.from_dict(one_dict)
-        ret.append(new_task)
-    return ret
-
-
-def compare_lists(src_list, target_list):
-    zipped = list(zip(src_list, target_list))
-    for (i, j) in zipped:
-        if i.to_dict() != j.to_dict():
-            DEBUG_HALT()
-
-
-if __name__ == "__main__":
-    task_list = generate_random_tasks(100, 50)
-    json_file = "output.json"
-    to_json_file(task_list, json_file)
-    output_list = from_json_file(json_file)
-    print(output_list)
-    compare_lists(task_list, output_list)
-    # for task in task_list:
-    #     print(task.to_dict())

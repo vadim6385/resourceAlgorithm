@@ -1,6 +1,7 @@
 import numpy as np
 
 import task
+import task_gen
 from heatmap_plot import TaskHeatmap
 from utils import DEBUG_HALT
 
@@ -10,7 +11,7 @@ class AlgoTester:
         # Initialize the task matrix, total bandwidth, and task list from a JSON file
         self.task_matrix = None
         self.total_bandwidth = total_bandwidth
-        self.task_list = task.from_json_file(task_list_file)
+        self.task_list = task_gen.from_json_file(task_list_file)
         self.completed_tasks = []
         self.scores_dict = {}
         self.time_start = 0
@@ -49,8 +50,11 @@ class AlgoTester:
         for one_prio in self.scores_dict:
             tasks_num = self.scores_dict[one_prio][0]
             total_score = self.scores_dict[one_prio][1]
-            avg_score = total_score / tasks_num
-            self.scores_dict[one_prio][2] = int(avg_score)
+            try:
+                avg_score = int(total_score / tasks_num)
+            except ZeroDivisionError:
+                avg_score = "N/A"
+            self.scores_dict[one_prio][2] = avg_score
         return self.scores_dict
 
     def avg_score_per_priority_str(self):
@@ -94,24 +98,35 @@ class AlgoTester:
 
 
 if __name__ == "__main__":
-    task_list = "output.json"
-    from algorithms import simple_greedy_algorithm
+    max_bandwidth = 50
+    task_lists_dict = {"Random": ("task_list_random.json", "Generated queue of random tasks"),
+                       "A": ("task_list_a.json", "Generated tasks as: lowest priority first, premium priority second, enterprise priority third"),
+                       "B": ("task_list_b.json", "Generated tasks as: lowest and premium priority first, enterprise priority second"),
+                       "C": ("task_list_c.json", "Created chunks of three tasks of same priority, first will be 0.6 of max bandwidth, two more will be exactly half bandwidth")}
 
-    tester = AlgoTester(task_list, 50)
-    tester.test(simple_greedy_algorithm)
-    print(f"Greedy algorithm average score: {tester.avg_score_per_priority_str()}")
-    tester.show_heatmap_plot()
-    del (tester)
-    from algorithms import greedy_compression_algorithm
+    for key, value_tuple in task_lists_dict.items():
+        task_list_file = value_tuple[0]
+        explanation_string = value_tuple[1]
+        print(f"{key}: {explanation_string}\n")
+        from algorithms import simple_greedy_algorithm
 
-    tester = AlgoTester(task_list, 50)
-    tester.test(greedy_compression_algorithm)
-    print(f"Greedy compression algorithm average score: {tester.avg_score_per_priority_str()}")
-    tester.show_heatmap_plot()
-    del (tester)
-    from algorithms import preemptive_scheduling_algorithm
+        tester = AlgoTester(task_list_file, max_bandwidth)
+        tester.test(simple_greedy_algorithm)
+        print(f"Greedy algorithm average score for Task List \"{key}\": {tester.avg_score_per_priority_str()}")
+        # tester.show_heatmap_plot()
+        del (tester)
+        from algorithms import greedy_compression_algorithm
 
-    tester = AlgoTester(task_list, 50)
-    tester.test(preemptive_scheduling_algorithm)
-    print(f"Greedy compression algorithm average score: {tester.avg_score_per_priority_str()}")
-    tester.show_heatmap_plot()
+        tester = AlgoTester(task_list_file, max_bandwidth)
+        tester.test(greedy_compression_algorithm)
+        print(f"Greedy compression algorithm average score for Task List \"{key}\": {tester.avg_score_per_priority_str()}")
+        # tester.show_heatmap_plot()
+        del (tester)
+        from algorithms import preemptive_scheduling_algorithm
+
+        tester = AlgoTester(task_list_file, max_bandwidth)
+        tester.test(preemptive_scheduling_algorithm)
+        print(f"Preemptive scheduling algorithm average score for Task List \"{key}\": {tester.avg_score_per_priority_str()}")
+        # tester.show_heatmap_plot()
+        del (tester)
+        print("\n")

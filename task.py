@@ -241,15 +241,3 @@ class Task:
         self.__total_duration = self.__remaining_duration = src_dict['duration']
         self.priority = src_dict['priority']
         self.__actual_end_time = self.__actual_start_time + self.__total_duration
-
-
-if __name__ == "__main__":
-    from task_gen import generate_random_tasks, to_json_file, from_json_file, compare_lists
-    task_list = generate_random_tasks(100, 50)
-    json_file = "output.json"
-    to_json_file(task_list, json_file)
-    output_list = from_json_file(json_file)
-    print(output_list)
-    compare_lists(task_list, output_list)
-    # for task in task_list:
-    #     print(task.to_dict())

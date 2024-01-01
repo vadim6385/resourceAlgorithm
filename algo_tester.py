@@ -95,24 +95,32 @@ class AlgoTester:
 
 
 if __name__ == "__main__":
-    task_list = "output.json"
-    from algorithms import simple_greedy_algorithm
+    max_bandwidth = 50
+    task_lists_dict = {"Random": "task_list_random.json",
+                       "A": "task_list_a.json",
+                       "B": "task_list_b.json",
+                       "C": "task_list_c.json"}
 
-    tester = AlgoTester(task_list, 50)
-    tester.test(simple_greedy_algorithm)
-    print(f"Greedy algorithm average score: {tester.avg_score_per_priority_str()}")
-    tester.show_heatmap_plot()
-    del (tester)
-    from algorithms import greedy_compression_algorithm
+    for key, task_list_file in task_lists_dict.items():
 
-    tester = AlgoTester(task_list, 50)
-    tester.test(greedy_compression_algorithm)
-    print(f"Greedy compression algorithm average score: {tester.avg_score_per_priority_str()}")
-    tester.show_heatmap_plot()
-    del (tester)
-    from algorithms import preemptive_scheduling_algorithm
+        from algorithms import simple_greedy_algorithm
 
-    tester = AlgoTester(task_list, 50)
-    tester.test(preemptive_scheduling_algorithm)
-    print(f"Greedy compression algorithm average score: {tester.avg_score_per_priority_str()}")
-    tester.show_heatmap_plot()
+        tester = AlgoTester(task_list_file, max_bandwidth)
+        tester.test(simple_greedy_algorithm)
+        print(f"Greedy algorithm average score for Task List \"{key}\": {tester.avg_score_per_priority_str()}")
+        # tester.show_heatmap_plot()
+        del (tester)
+        from algorithms import greedy_compression_algorithm
+
+        tester = AlgoTester(task_list_file, max_bandwidth)
+        tester.test(greedy_compression_algorithm)
+        print(f"Greedy compression algorithm average score for Task List \"{key}\": {tester.avg_score_per_priority_str()}")
+        # tester.show_heatmap_plot()
+        del (tester)
+        from algorithms import preemptive_scheduling_algorithm
+
+        tester = AlgoTester(task_list_file, max_bandwidth)
+        tester.test(preemptive_scheduling_algorithm)
+        print(f"Preemptive scheduling algorithm average score for Task List \"{key}\": {tester.avg_score_per_priority_str()}")
+        # tester.show_heatmap_plot()
+        del (tester)

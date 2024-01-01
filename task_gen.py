@@ -187,11 +187,16 @@ def gen_tasks_high_bandwidth_usage(num_tasks, max_bandwidth, start_time=0,
 
 
 if __name__ == "__main__":
-    num_tasks = 1000
+    num_tasks = 100
     max_bandwidth = 50
     start_time = 0
     max_duration = 20
     end_time = DEFAULT_END_TIME
+
+    # generate list of random_tasks
+    task_list_random = generate_random_tasks(num_tasks=num_tasks, max_bandwidth=max_bandwidth,
+                                             start_time=start_time, end_time=end_time)
+    to_json_file(task_list_random, "task_list_random.json")
 
     # generate lots of tasks with regular+premium priority first, then enterprise
     task_list_a = gen_tasks_reg_and_prem_first_ent_last(num_tasks=num_tasks, max_bandwidth=max_bandwidth,

@@ -148,10 +148,49 @@ def gen_tasks_reg_and_prem_first_ent_last(num_tasks, max_bandwidth, start_time=0
     return sorted(reg_tasks_list + prem_tasks_list + ent_tasks_list, key=attrgetter('created_time'))
 
 
+def gen_tasks_high_bandwidth_usage(num_tasks, max_bandwidth, start_time=0,
+                                   max_duration=10, end_time=DEFAULT_END_TIME, priority=TaskPriority.ENTERPRISE):
+    """
+    create chunks of three tasks of same priority, first will be 0.6 of max bandwidth, two more will be exactly half bandwidth
+    :param max_duration: maximum duration per task
+    :param priority: set priority, by default priority is set at random
+    :param num_tasks: number of tasks to generate
+    :param max_bandwidth: maximum bandwidth for the task
+    :param start_time: global task start time
+    :param end_time: global task end time
+    :return: list of generated tasks
+    """
+    # Initialize an empty list to store the tasks
+    retlist = []
+    # Initialize task start time
+    task_start_time = start_time
+    # Iterate over the tasks in steps of 3 to group them for bandwidth allocation
+    for i in range(0, num_tasks, 3):
+        # Set high bandwidth usage for tasks (60% of max, then dividing the rest equally among two tasks)
+        task_bandwidths = [int(max_bandwidth * 0.6), int(max_bandwidth / 2), int(max_bandwidth / 2)]
+        # Initialize minimum bandwidths and durations for each task as 0
+        task_min_bandwidths = [0, 0, 0]
+        task_durations = [0, 0, 0]
+        # Randomly assign duration and minimum bandwidth for each task
+        for i in range(len(task_durations)):
+            task_durations[i] = random.randint(1, max_duration)  # Random duration between 1 and max_duration
+            task_min_bandwidths[i] = random.randint(0, task_bandwidths[i])  # Random min bandwidth up to the task's bandwidth
+        # Create and append each task to the return list with the specified attributes
+        for i in range(len(task_durations)):
+            new_task = Task(bandwidth=task_bandwidths[i], created_time=task_start_time,
+                            duration=task_durations[i], min_bandwidth=task_min_bandwidths[i], priority=priority)
+            retlist.append(new_task)
+        # Increment the start time for the next set of tasks
+        task_start_time += max_duration
+    # Return the list of tasks
+    return retlist
+
+
 if __name__ == "__main__":
     num_tasks = 1000
     max_bandwidth = 50
     start_time = 0
+    max_duration = 20
     end_time = DEFAULT_END_TIME
 
     # generate lots of tasks with regular+premium priority first, then enterprise
@@ -163,3 +202,8 @@ if __name__ == "__main__":
     task_list_b = gen_tasks_lowest_priority_first(num_tasks=num_tasks, max_bandwidth=max_bandwidth,
                                                         start_time=start_time, end_time=end_time)
     to_json_file(task_list_b, "task_list_b.json")
+
+    # create chunks of three tasks of same priority, first will be 0.6 of max bandwidth, two more will be exactly half bandwidth
+    task_list_c = gen_tasks_high_bandwidth_usage(num_tasks=num_tasks, max_bandwidth=max_bandwidth,
+                                                        start_time=start_time, end_time=end_time, max_duration=max_duration)
+    to_json_file(task_list_c, "task_list_c.json")

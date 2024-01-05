@@ -188,10 +188,10 @@ def gen_tasks_high_bandwidth_usage(num_tasks, max_bandwidth, start_time=0,
 
 
 if __name__ == "__main__":
-    num_tasks = 100
-    max_bandwidth = 50
+    num_tasks = 10000
+    max_bandwidth = 100
     start_time = 0
-    max_duration = 20
+    max_duration = 100
     end_time = DEFAULT_END_TIME
 
     # generate list of random_tasks

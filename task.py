@@ -49,6 +49,7 @@ class Task:
         self.__preempted_time = self.__actual_start_time
         self.__task_status = TaskStatus.PENDING
         self.__is_preempted = False
+        self.__end_time_changed = False
 
     # get task score
     @property
@@ -56,9 +57,11 @@ class Task:
         return self.__score
 
     # set task score
-    @score.setter
-    def score(self, val: int) -> None:
-        self.__score = val
+    def rate(self):
+        self.__score = self.actual_start_time - self.created_time
+        if self.__duration_changed:
+            actual_duration = self.actual_end_time - self.actual_start_time
+            self.__score += actual_duration - self.total_duration
 
     # get unique task Id
     @property
@@ -171,13 +174,14 @@ class Task:
     # get task actual end time
     @property
     def actual_end_time(self):
-        if not self.__duration_changed:
+        if not self.__end_time_changed:
             return self.__actual_start_time + self.__total_duration
         return self.__actual_end_time
 
     # set actual end time
     @actual_end_time.setter
     def actual_end_time(self, val):
+        self.__end_time_changed = True
         self.__actual_end_time = val
 
     # compress the task to minimal bandwidth
@@ -191,7 +195,6 @@ class Task:
     def preempt(self, current_time):
         self.__is_preempted = True
         self.__preempted_time = current_time + 1
-        self.__actual_start_time = current_time + 1
         self.__task_status = TaskStatus.PENDING
 
     # String representation of the Task object

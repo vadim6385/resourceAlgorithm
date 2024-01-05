@@ -28,7 +28,7 @@ class AlgoTester:
         self.time_start = min(one_task.created_time for one_task in self.completed_tasks)
         self.time_end = max(one_task.actual_end_time for one_task in self.completed_tasks)
         self.rate_tasks()  # Calculate the score for each task
-        self.create_task_matrix()  # Create the task matrix
+        # self.create_task_matrix()  # Create the task matrix
 
     def rate_tasks(self):
         """
@@ -40,12 +40,11 @@ class AlgoTester:
         self.scores_dict = {priority: [0, 0, 0] for priority in priority_names}
         for one_task in self.completed_tasks:
             # Calculate the score for each task based on start times
-            new_score = one_task.actual_start_time - one_task.created_time
-            one_task.score = new_score
+            one_task.rate()
             # Update the scores dictionary
             task_priority = one_task.priority.name
             self.scores_dict[task_priority][0] += 1
-            self.scores_dict[task_priority][1] += new_score
+            self.scores_dict[task_priority][1] += one_task.score
         # Calculate the average score for each priority
         for one_prio in self.scores_dict:
             tasks_num = self.scores_dict[one_prio][0]

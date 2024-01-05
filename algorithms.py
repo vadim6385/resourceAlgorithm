@@ -199,11 +199,10 @@ def preemptive_scheduling_algorithm(task_list, total_bandwidth):
                 add_task_to_processing_queue(one_task)
         return new_task_added
 
-    def finish_task(one_task, end_time):
+    def finish_task(one_task):
         """Finish a task and move it to the completed queue."""
         nonlocal completedQueue
         one_task.status = TaskStatus.FINISHED
-        one_task.actual_end_time = end_time
         remove_task_from_processing_queue(one_task)
         completedQueue.append(one_task)
 
@@ -220,7 +219,7 @@ def preemptive_scheduling_algorithm(task_list, total_bandwidth):
             # Decrease remaining duration for tasks in progress
             one_task.remaining_duration -= 1
             if one_task.remaining_duration == 0:
-                finish_task(one_task, current_time)
+                finish_task(one_task)
 
         # Process tasks at the current time
         try:

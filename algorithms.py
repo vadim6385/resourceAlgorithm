@@ -203,7 +203,7 @@ def preemptive_scheduling_algorithm(task_list, total_bandwidth):
         """Finish a task and move it to the completed queue."""
         nonlocal completedQueue
         one_task.status = TaskStatus.FINISHED
-        one_task.actual_end_time = end_time
+        # one_task.actual_end_time = end_time
         remove_task_from_processing_queue(one_task)
         completedQueue.append(one_task)
 

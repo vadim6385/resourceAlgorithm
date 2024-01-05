@@ -28,7 +28,7 @@ class AlgoTester:
         self.time_start = min(one_task.created_time for one_task in self.completed_tasks)
         self.time_end = max(one_task.actual_end_time for one_task in self.completed_tasks)
         self.rate_tasks()  # Calculate the score for each task
-        self.create_task_matrix()  # Create the task matrix
+        # self.create_task_matrix()  # Create the task matrix
 
     def rate_tasks(self):
         """
@@ -107,20 +107,20 @@ if __name__ == "__main__":
         task_list_file = value_tuple[0]
         explanation_string = value_tuple[1]
         print(f"{key}: {explanation_string}\n")
-        # from algorithms import simple_greedy_algorithm
-        #
-        # tester = AlgoTester(task_list_file, max_bandwidth)
-        # tester.test(simple_greedy_algorithm)
-        # print(f"Greedy algorithm average score for Task List \"{key}\": {tester.avg_score_per_priority_str()}")
-        # # tester.show_heatmap_plot()
-        # del (tester)
-        # from algorithms import greedy_compression_algorithm
-        #
-        # tester = AlgoTester(task_list_file, max_bandwidth)
-        # tester.test(greedy_compression_algorithm)
-        # print(f"Greedy compression algorithm average score for Task List \"{key}\": {tester.avg_score_per_priority_str()}")
-        # # tester.show_heatmap_plot()
-        # del (tester)
+        from algorithms import simple_greedy_algorithm
+
+        tester = AlgoTester(task_list_file, max_bandwidth)
+        tester.test(simple_greedy_algorithm)
+        print(f"Greedy algorithm average score for Task List \"{key}\": {tester.avg_score_per_priority_str()}")
+        # tester.show_heatmap_plot()
+        del (tester)
+        from algorithms import greedy_compression_algorithm
+
+        tester = AlgoTester(task_list_file, max_bandwidth)
+        tester.test(greedy_compression_algorithm)
+        print(f"Greedy compression algorithm average score for Task List \"{key}\": {tester.avg_score_per_priority_str()}")
+        # tester.show_heatmap_plot()
+        del (tester)
         from algorithms import preemptive_scheduling_algorithm
 
         tester = AlgoTester(task_list_file, max_bandwidth)

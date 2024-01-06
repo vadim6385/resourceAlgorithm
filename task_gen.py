@@ -19,7 +19,7 @@ def generate_random_tasks(num_tasks, max_bandwidth, start_time=0, end_time=DEFAU
     """
     ret = []
     for i in range(num_tasks):
-        task_bandwidth = random.randint(0, int(max_bandwidth / 2))
+        task_bandwidth = random.randint(1, int(max_bandwidth / 2))
         task_min_bandwidth = random.randint(0, task_bandwidth)
         if not set_priority:
             priority = random.randrange(TaskPriority.REGULAR, TaskPriority.ENTERPRISE + 1, 1)
@@ -188,10 +188,10 @@ def gen_tasks_high_bandwidth_usage(num_tasks, max_bandwidth, start_time=0,
 
 
 if __name__ == "__main__":
-    num_tasks = 10000
-    max_bandwidth = 100
+    num_tasks = 1000
+    max_bandwidth = 50
     start_time = 0
-    max_duration = 100
+    max_duration = 50
     end_time = DEFAULT_END_TIME
 
     # generate list of random_tasks

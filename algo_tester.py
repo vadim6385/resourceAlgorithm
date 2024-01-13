@@ -1,5 +1,6 @@
 import numpy as np
 import multiprocessing as mps
+from datetime import datetime
 
 import task
 import task_gen
@@ -98,9 +99,10 @@ class AlgoTester:
         heatmap_plot.show_plot()
 
 
-def algo_worker(l, algo_fp, algo_name, task_list_type, value_tuple, max_bandwidth):
+def algo_worker(l, algo_fp, algo_name, task_list_type, value_tuple, max_bandwidth, log_file=None):
     """
     Worker function that runs algorithms in multiple processes.
+    :param log_file: log file to write to, default no log file
     :param l: multiprocessing Lock object
     :param algo_fp: Function pointer to the algorithm.
     :param algo_name: Name of the algorithm for display purposes.
@@ -114,15 +116,28 @@ def algo_worker(l, algo_fp, algo_name, task_list_type, value_tuple, max_bandwidt
     tester = AlgoTester(task_list_file, max_bandwidth)  # Initialize the AlgoTester with the task list and bandwidth
     tester.test(algo_fp)  # Run the algorithm function on the tester
     # Output the results
+    now = datetime.now()
+    date_time = f"Run Time: {now.strftime("%m/%d/%Y, %H:%M:%S")}"
+    task_list_str = f"{task_list_type}: {explanation_string}"
+    algo_score_str = f"{algo_name} average score for Task List \"{task_list_type}\": {tester.avg_score_per_priority_str()}\n"
     l.acquire()  # acquire lock for printing
-    print(f"{task_list_type}: {explanation_string}")
-    print(f"{algo_name} average score for Task List \"{task_list_type}\": {tester.avg_score_per_priority_str()}\n")
+    # if given log file name, write to log
+    if log_file:
+        with open(log_file, "a+") as f:
+            f.write(date_time + "\n")
+            f.write(task_list_str + "\n")
+            f.write(algo_score_str + "\n")
+    print(date_time)
+    print(task_list_str)
+    print(algo_score_str)
     # Uncomment the next line to show heatmap plots if needed
     # tester.show_heatmap_plot()
     l.release()  # release lock for printing
 
 
-def main():
+def main(log_file=None, clear_log=True):
+    if log_file and clear_log:
+        open(log_file, "w").close()
     max_bandwidth = 50  # Define the maximum bandwidth
     # List of algorithms and their names
     algo_functions = [(simple_greedy_algorithm, "Simple greedy algorithm"),
@@ -142,7 +157,7 @@ def main():
     # Create a process for each algorithm on each task list
     for algo_fp, algo_name in algo_functions:
         for key, value_tuple in task_lists_dict.items():
-            p = mps.Process(target=algo_worker, args=(lock, algo_fp, algo_name, key, value_tuple, max_bandwidth,))
+            p = mps.Process(target=algo_worker, args=(lock, algo_fp, algo_name, key, value_tuple, max_bandwidth, log_file,))
             procs.append(p)  # Add the process to the list
     # Start each process
     for p in procs:
@@ -153,4 +168,4 @@ def main():
 
 
 if __name__ == "__main__":
-    main()  # Run the main function
+    main("log.txt", clear_log=True)  # Run the main function

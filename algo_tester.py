@@ -1,7 +1,10 @@
+from multiprocessing import Process
+
 import numpy as np
 
 import task
 import task_gen
+from algorithms import greedy_compression_algorithm, preemptive_scheduling_algorithm, simple_greedy_algorithm
 from heatmap_plot import TaskHeatmap
 from utils import DEBUG_HALT
 
@@ -96,36 +99,50 @@ class AlgoTester:
         heatmap_plot.show_plot()
 
 
-if __name__ == "__main__":
+def algo_worker(algo_fp, algo_name, key, value_tuple, max_bandwidth):
+    """
+    worker function that runs algorithms in multiple processes
+    :param algo_fp: algorithm function pointer
+    :param algo_name: algorithm name for prints
+    :param key:
+    :param value_tuple:
+    :param max_bandwidth:
+    :return:
+    """
+    task_list_file = value_tuple[0]
+    explanation_string = value_tuple[1]
+    tester = AlgoTester(task_list_file, max_bandwidth)
+    tester.test(algo_fp)
+    print(f"{key}: {explanation_string}\n")
+    print(f"{algo_name} average score for Task List \"{key}\": {tester.avg_score_per_priority_str()}")
+    # tester.show_heatmap_plot()
+
+
+def main():
     max_bandwidth = 50
+    algo_functions = [(simple_greedy_algorithm, "Simple greedy algorithm"),
+                      (greedy_compression_algorithm, "Greedy compression algorithm"),
+                      (preemptive_scheduling_algorithm, "Preemptive scheduling algorithm")]
     task_lists_dict = {"Random": ("task_list_random.json", "Generated queue of random tasks"),
-                       "A": ("task_list_a.json", "Generated tasks as: lowest priority first, premium priority second, enterprise priority third"),
-                       "B": ("task_list_b.json", "Generated tasks as: lowest and premium priority first, enterprise priority second"),
-                       "C": ("task_list_c.json", "Created chunks of three tasks of same priority, first will be 0.6 of max bandwidth, two more will be exactly half bandwidth")}
+                       "A": ("task_list_a.json",
+                             "Generated tasks as: lowest priority first, premium priority second, enterprise priority third"),
+                       "B": ("task_list_b.json",
+                             "Generated tasks as: lowest and premium priority first, enterprise priority second"),
+                       "C": ("task_list_c.json",
+                             "Created chunks of three tasks of same priority, first will be 0.6 of max bandwidth, two more will be exactly half bandwidth")}
 
-    for key, value_tuple in task_lists_dict.items():
-        task_list_file = value_tuple[0]
-        explanation_string = value_tuple[1]
-        print(f"{key}: {explanation_string}\n")
-        from algorithms import simple_greedy_algorithm
+    procs = []
+    for algo_fp, algo_name in algo_functions:
+        for key, value_tuple in task_lists_dict.items():
+            p = Process(target = algo_worker, args=(algo_fp, algo_name, key, value_tuple, max_bandwidth,))
+            procs.append(p)
 
-        tester = AlgoTester(task_list_file, max_bandwidth)
-        tester.test(simple_greedy_algorithm)
-        print(f"Greedy algorithm average score for Task List \"{key}\": {tester.avg_score_per_priority_str()}")
-        # tester.show_heatmap_plot()
-        del (tester)
-        from algorithms import greedy_compression_algorithm
+    for p in procs:
+        p.start()
 
-        tester = AlgoTester(task_list_file, max_bandwidth)
-        tester.test(greedy_compression_algorithm)
-        print(f"Greedy compression algorithm average score for Task List \"{key}\": {tester.avg_score_per_priority_str()}")
-        # tester.show_heatmap_plot()
-        del (tester)
-        from algorithms import preemptive_scheduling_algorithm
+    for p in procs:
+        p.join()
 
-        tester = AlgoTester(task_list_file, max_bandwidth)
-        tester.test(preemptive_scheduling_algorithm)
-        print(f"Preemptive scheduling algorithm average score for Task List \"{key}\": {tester.avg_score_per_priority_str()}")
-        # tester.show_heatmap_plot()
-        del (tester)
-        print("\n")
+
+if __name__ == "__main__":
+    main()

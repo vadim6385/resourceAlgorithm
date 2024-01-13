@@ -1,7 +1,10 @@
 import numpy as np
+import multiprocessing as mps
+from datetime import datetime
 
 import task
 import task_gen
+from algorithms import greedy_compression_algorithm, preemptive_scheduling_algorithm, simple_greedy_algorithm
 from heatmap_plot import TaskHeatmap
 from utils import DEBUG_HALT
 
@@ -96,36 +99,73 @@ class AlgoTester:
         heatmap_plot.show_plot()
 
 
-if __name__ == "__main__":
-    max_bandwidth = 50
+def algo_worker(l, algo_fp, algo_name, task_list_type, value_tuple, max_bandwidth, log_file=None):
+    """
+    Worker function that runs algorithms in multiple processes.
+    :param log_file: log file to write to, default no log file
+    :param l: multiprocessing Lock object
+    :param algo_fp: Function pointer to the algorithm.
+    :param algo_name: Name of the algorithm for display purposes.
+    :param task_list_type: Type or identifier of the task list being processed.
+    :param value_tuple: Tuple containing the task list file and its description.
+    :param max_bandwidth: Maximum bandwidth per task.
+    :return: None.
+    """
+    task_list_file = value_tuple[0]  # Extract the task list file from the tuple
+    explanation_string = value_tuple[1]  # Extract the explanation string from the tuple
+    tester = AlgoTester(task_list_file, max_bandwidth)  # Initialize the AlgoTester with the task list and bandwidth
+    tester.test(algo_fp)  # Run the algorithm function on the tester
+    # Output the results
+    now = datetime.now()
+    date_time = f"Run Time: {now.strftime("%m/%d/%Y, %H:%M:%S")}"
+    task_list_str = f"{task_list_type}: {explanation_string}"
+    algo_score_str = f"{algo_name} average score for Task List \"{task_list_type}\": {tester.avg_score_per_priority_str()}\n"
+    l.acquire()  # acquire lock for printing
+    # if given log file name, write to log
+    if log_file:
+        with open(log_file, "a+") as f:
+            f.write(date_time + "\n")
+            f.write(task_list_str + "\n")
+            f.write(algo_score_str + "\n")
+    print(date_time)
+    print(task_list_str)
+    print(algo_score_str)
+    # Uncomment the next line to show heatmap plots if needed
+    # tester.show_heatmap_plot()
+    l.release()  # release lock for printing
+
+
+def main(log_file=None, clear_log=True):
+    if log_file and clear_log:
+        open(log_file, "w").close()
+    max_bandwidth = 50  # Define the maximum bandwidth
+    # List of algorithms and their names
+    algo_functions = [(simple_greedy_algorithm, "Simple greedy algorithm"),
+                      (greedy_compression_algorithm, "Greedy compression algorithm"),
+                      (preemptive_scheduling_algorithm, "Preemptive scheduling algorithm")]
+    # Dictionary mapping task list types to their respective files and descriptions
     task_lists_dict = {"Random": ("task_list_random.json", "Generated queue of random tasks"),
-                       "A": ("task_list_a.json", "Generated tasks as: lowest priority first, premium priority second, enterprise priority third"),
-                       "B": ("task_list_b.json", "Generated tasks as: lowest and premium priority first, enterprise priority second"),
-                       "C": ("task_list_c.json", "Created chunks of three tasks of same priority, first will be 0.6 of max bandwidth, two more will be exactly half bandwidth")}
+                       "A": ("task_list_a.json",
+                             "Created tasks as: lowest priority first, premium priority second, enterprise priority third"),
+                       "B": ("task_list_b.json",
+                             "Created tasks as: lowest and premium priority first, enterprise priority second"),
+                       "C": ("task_list_c.json",
+                             "Created chunks of three tasks of same priority, first will be 0.6 of max bandwidth, two more will be exactly half bandwidth")}
 
-    for key, value_tuple in task_lists_dict.items():
-        task_list_file = value_tuple[0]
-        explanation_string = value_tuple[1]
-        print(f"{key}: {explanation_string}\n")
-        from algorithms import simple_greedy_algorithm
+    procs = []  # List to keep track of process objects
+    lock = mps.Lock()
+    # Create a process for each algorithm on each task list
+    for algo_fp, algo_name in algo_functions:
+        for key, value_tuple in task_lists_dict.items():
+            p = mps.Process(target=algo_worker, args=(lock, algo_fp, algo_name, key, value_tuple, max_bandwidth, log_file,))
+            procs.append(p)  # Add the process to the list
+    # Start each process
+    for p in procs:
+        p.start()
+    # Wait for all processes to finish
+    for p in procs:
+        p.join()
 
-        tester = AlgoTester(task_list_file, max_bandwidth)
-        tester.test(simple_greedy_algorithm)
-        print(f"Greedy algorithm average score for Task List \"{key}\": {tester.avg_score_per_priority_str()}")
-        # tester.show_heatmap_plot()
-        del (tester)
-        from algorithms import greedy_compression_algorithm
 
-        tester = AlgoTester(task_list_file, max_bandwidth)
-        tester.test(greedy_compression_algorithm)
-        print(f"Greedy compression algorithm average score for Task List \"{key}\": {tester.avg_score_per_priority_str()}")
-        # tester.show_heatmap_plot()
-        del (tester)
-        from algorithms import preemptive_scheduling_algorithm
-
-        tester = AlgoTester(task_list_file, max_bandwidth)
-        tester.test(preemptive_scheduling_algorithm)
-        print(f"Preemptive scheduling algorithm average score for Task List \"{key}\": {tester.avg_score_per_priority_str()}")
-        # tester.show_heatmap_plot()
-        del (tester)
-        print("\n")
+if __name__ == "__main__":
+    main("log.txt", clear_log=True)  # Run the main function

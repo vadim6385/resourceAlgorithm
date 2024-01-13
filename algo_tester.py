@@ -1,6 +1,5 @@
-from multiprocessing import Process
-
 import numpy as np
+import multiprocessing as mps
 
 import task
 import task_gen
@@ -99,9 +98,10 @@ class AlgoTester:
         heatmap_plot.show_plot()
 
 
-def algo_worker(algo_fp, algo_name, task_list_type, value_tuple, max_bandwidth):
+def algo_worker(l, algo_fp, algo_name, task_list_type, value_tuple, max_bandwidth):
     """
     Worker function that runs algorithms in multiple processes.
+    :param l: multiprocessing Lock object
     :param algo_fp: Function pointer to the algorithm.
     :param algo_name: Name of the algorithm for display purposes.
     :param task_list_type: Type or identifier of the task list being processed.
@@ -114,10 +114,12 @@ def algo_worker(algo_fp, algo_name, task_list_type, value_tuple, max_bandwidth):
     tester = AlgoTester(task_list_file, max_bandwidth)  # Initialize the AlgoTester with the task list and bandwidth
     tester.test(algo_fp)  # Run the algorithm function on the tester
     # Output the results
-    print(f"{task_list_type}: {explanation_string}\n")
-    print(f"{algo_name} average score for Task List \"{task_list_type}\": {tester.avg_score_per_priority_str()}")
+    l.acquire()  # acquire lock for printing
+    print(f"{task_list_type}: {explanation_string}")
+    print(f"{algo_name} average score for Task List \"{task_list_type}\": {tester.avg_score_per_priority_str()}\n")
     # Uncomment the next line to show heatmap plots if needed
     # tester.show_heatmap_plot()
+    l.release()  # release lock for printing
 
 
 def main():
@@ -129,23 +131,22 @@ def main():
     # Dictionary mapping task list types to their respective files and descriptions
     task_lists_dict = {"Random": ("task_list_random.json", "Generated queue of random tasks"),
                        "A": ("task_list_a.json",
-                             "Generated tasks as: lowest priority first, premium priority second, enterprise priority third"),
+                             "Created tasks as: lowest priority first, premium priority second, enterprise priority third"),
                        "B": ("task_list_b.json",
-                             "Generated tasks as: lowest and premium priority first, enterprise priority second"),
+                             "Created tasks as: lowest and premium priority first, enterprise priority second"),
                        "C": ("task_list_c.json",
                              "Created chunks of three tasks of same priority, first will be 0.6 of max bandwidth, two more will be exactly half bandwidth")}
 
     procs = []  # List to keep track of process objects
+    lock = mps.Lock()
     # Create a process for each algorithm on each task list
     for algo_fp, algo_name in algo_functions:
         for key, value_tuple in task_lists_dict.items():
-            p = Process(target=algo_worker, args=(algo_fp, algo_name, key, value_tuple, max_bandwidth,))
+            p = mps.Process(target=algo_worker, args=(lock, algo_fp, algo_name, key, value_tuple, max_bandwidth,))
             procs.append(p)  # Add the process to the list
-
     # Start each process
     for p in procs:
         p.start()
-
     # Wait for all processes to finish
     for p in procs:
         p.join()

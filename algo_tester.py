@@ -99,30 +99,34 @@ class AlgoTester:
         heatmap_plot.show_plot()
 
 
-def algo_worker(algo_fp, algo_name, key, value_tuple, max_bandwidth):
+def algo_worker(algo_fp, algo_name, task_list_type, value_tuple, max_bandwidth):
     """
-    worker function that runs algorithms in multiple processes
-    :param algo_fp: algorithm function pointer
-    :param algo_name: algorithm name for prints
-    :param key:
-    :param value_tuple:
-    :param max_bandwidth:
-    :return:
+    Worker function that runs algorithms in multiple processes.
+    :param algo_fp: Function pointer to the algorithm.
+    :param algo_name: Name of the algorithm for display purposes.
+    :param task_list_type: Type or identifier of the task list being processed.
+    :param value_tuple: Tuple containing the task list file and its description.
+    :param max_bandwidth: Maximum bandwidth per task.
+    :return: None.
     """
-    task_list_file = value_tuple[0]
-    explanation_string = value_tuple[1]
-    tester = AlgoTester(task_list_file, max_bandwidth)
-    tester.test(algo_fp)
-    print(f"{key}: {explanation_string}\n")
-    print(f"{algo_name} average score for Task List \"{key}\": {tester.avg_score_per_priority_str()}")
+    task_list_file = value_tuple[0]  # Extract the task list file from the tuple
+    explanation_string = value_tuple[1]  # Extract the explanation string from the tuple
+    tester = AlgoTester(task_list_file, max_bandwidth)  # Initialize the AlgoTester with the task list and bandwidth
+    tester.test(algo_fp)  # Run the algorithm function on the tester
+    # Output the results
+    print(f"{task_list_type}: {explanation_string}\n")
+    print(f"{algo_name} average score for Task List \"{task_list_type}\": {tester.avg_score_per_priority_str()}")
+    # Uncomment the next line to show heatmap plots if needed
     # tester.show_heatmap_plot()
 
 
 def main():
-    max_bandwidth = 50
+    max_bandwidth = 50  # Define the maximum bandwidth
+    # List of algorithms and their names
     algo_functions = [(simple_greedy_algorithm, "Simple greedy algorithm"),
                       (greedy_compression_algorithm, "Greedy compression algorithm"),
                       (preemptive_scheduling_algorithm, "Preemptive scheduling algorithm")]
+    # Dictionary mapping task list types to their respective files and descriptions
     task_lists_dict = {"Random": ("task_list_random.json", "Generated queue of random tasks"),
                        "A": ("task_list_a.json",
                              "Generated tasks as: lowest priority first, premium priority second, enterprise priority third"),
@@ -131,18 +135,21 @@ def main():
                        "C": ("task_list_c.json",
                              "Created chunks of three tasks of same priority, first will be 0.6 of max bandwidth, two more will be exactly half bandwidth")}
 
-    procs = []
+    procs = []  # List to keep track of process objects
+    # Create a process for each algorithm on each task list
     for algo_fp, algo_name in algo_functions:
         for key, value_tuple in task_lists_dict.items():
-            p = Process(target = algo_worker, args=(algo_fp, algo_name, key, value_tuple, max_bandwidth,))
-            procs.append(p)
+            p = Process(target=algo_worker, args=(algo_fp, algo_name, key, value_tuple, max_bandwidth,))
+            procs.append(p)  # Add the process to the list
 
+    # Start each process
     for p in procs:
         p.start()
 
+    # Wait for all processes to finish
     for p in procs:
         p.join()
 
 
 if __name__ == "__main__":
-    main()
+    main()  # Run the main function

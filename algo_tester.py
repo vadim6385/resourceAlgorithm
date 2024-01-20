@@ -31,7 +31,7 @@ class AlgoTester:
         self.time_start = min(one_task.created_time for one_task in self.completed_tasks)
         self.time_end = max(one_task.actual_end_time for one_task in self.completed_tasks)
         self.rate_tasks()  # Calculate the score for each task
-        # self.create_task_matrix()  # Create the task matrix
+        self.create_task_matrix()  # Create the task matrix
 
     def rate_tasks(self):
         """

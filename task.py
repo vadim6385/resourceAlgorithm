@@ -137,7 +137,8 @@ class Task:
     def remaining_duration(self):
         return self.__remaining_duration
 
-    def get_start_end_time_tuples_list(self):
+    @property
+    def start_end_times_list(self):
         return self.__start_end_times_list
 
     # Set remaining duration
@@ -172,7 +173,7 @@ class Task:
     @property
     def actual_end_time(self):
         if not self.__end_time_changed:
-            return self.actual_start_time + self.__total_duration
+            self.__start_end_times_list[-1][1] = self.actual_start_time + self.__total_duration
         return self.__start_end_times_list[-1][1]
 
     # set actual end time

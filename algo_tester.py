@@ -75,14 +75,19 @@ class AlgoTester:
         """
         self.task_matrix = np.zeros((self.total_bandwidth, self.time_end + 1), dtype=int)
         for one_task in self.completed_tasks:
+            list_time_tuples = one_task.start_end_times_list
             for time in range(one_task.actual_start_time, one_task.actual_end_time + 1):
                 allocated = False
                 for bw in range(self.total_bandwidth):
                     # Check if the bandwidth is available for the task at the given time
                     if all(self.task_matrix[bw:bw + one_task.bandwidth, time] == 0):
-                        self.task_matrix[bw:bw + one_task.bandwidth, time] = one_task.id
-                        allocated = True
-                        break
+                        for one_tuple in list_time_tuples:
+                            start_time = one_tuple[0]
+                            end_time = one_tuple[1]
+                            if start_time <= time <= end_time:
+                                self.task_matrix[bw:bw + one_task.bandwidth, time] = one_task.id
+                                allocated = True
+                                break
                 if not allocated:
                     DEBUG_HALT()
         # Sort the matrix for each time unit

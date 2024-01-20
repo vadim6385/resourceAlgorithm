@@ -52,10 +52,11 @@ def simple_greedy_algorithm(task_list, total_bandwidth):
 
     def add_task_to_processing_queue(new_task):
         """Add a task to the processing queue and deduct its bandwidth from the total."""
-        nonlocal total_bandwidth, processingQueue
+        nonlocal total_bandwidth, processingQueue, current_time
         total_bandwidth -= new_task.bandwidth
         if total_bandwidth < 0:  # Bandwidth should not fall below zero
             DEBUG_HALT()
+        new_task.actual_start_time = current_time
         new_task.status = TaskStatus.IN_PROGRESS
         processingQueue.append(new_task)
 
@@ -73,7 +74,7 @@ def simple_greedy_algorithm(task_list, total_bandwidth):
 
     def finish_task(one_task):
         """Finish a task and move it to the completed queue."""
-        nonlocal completedQueue
+        nonlocal completedQueue, current_time
         one_task.status = TaskStatus.FINISHED
         remove_task_from_processing_queue(one_task)
         completedQueue.append(one_task)
@@ -90,6 +91,7 @@ def simple_greedy_algorithm(task_list, total_bandwidth):
         # Go over processing queue and remove tasks that are done
         for one_task in processingQueue:
             if one_task.actual_end_time < current_time:
+                one_task.actual_end_time = one_task.actual_end_time
                 finish_task(one_task)
 
         # Process tasks at the current time
@@ -105,8 +107,8 @@ def simple_greedy_algorithm(task_list, total_bandwidth):
                     one_task.actual_start_time += 1
                     add_task_to_waiting_queue(one_task)
         except IndexError:
-            current_time += 1  # advance current time
             continue  # No tasks at the current time, move forward
+        current_time += 1  # advance current time
 
     # check if there are lost tasks
     diff_list = compare_lists(task_list, completedQueue)
@@ -139,11 +141,12 @@ def greedy_compression_algorithm(task_list, total_bandwidth):
 
     def add_task_to_processing_queue(new_task):
         """Add a task to the processing queue and deduct its bandwidth from the total."""
-        nonlocal total_bandwidth, processingQueue
+        nonlocal total_bandwidth, processingQueue, current_time
         total_bandwidth -= new_task.bandwidth
         if total_bandwidth < 0:  # Bandwidth should not fall below zero
             DEBUG_HALT()
         new_task.status = TaskStatus.IN_PROGRESS
+        new_task.actual_start_time = current_time
         processingQueue.append(new_task)
 
     def remove_task_from_processing_queue(task_to_remove=None):
@@ -178,6 +181,7 @@ def greedy_compression_algorithm(task_list, total_bandwidth):
         # Go over processing queue and remove tasks that are done
         for one_task in processingQueue:
             if one_task.actual_end_time < current_time:
+                one_task.actual_end_time = one_task.actual_end_time
                 finish_task(one_task)
 
         # Process tasks at the current time
@@ -245,10 +249,11 @@ def preemptive_scheduling_algorithm(task_list, total_bandwidth):
 
     def add_task_to_processing_queue(new_task):
         """Add a task to the processing queue and deduct its bandwidth from the total."""
-        nonlocal total_bandwidth, processingQueue
+        nonlocal total_bandwidth, processingQueue, current_time
         total_bandwidth -= new_task.bandwidth
         if total_bandwidth < 0:  # Bandwidth should not fall below zero
             DEBUG_HALT()
+        new_task.actual_start_time = current_time
         new_task.status = TaskStatus.IN_PROGRESS
         processingQueue.append(new_task)
 
@@ -294,8 +299,9 @@ def preemptive_scheduling_algorithm(task_list, total_bandwidth):
 
     def finish_task(one_task):
         """Finish a task and move it to the completed queue."""
-        nonlocal completedQueue
+        nonlocal completedQueue, current_time
         one_task.status = TaskStatus.FINISHED
+        one_task.actual_end_time = current_time
         remove_task_from_processing_queue(one_task)
         completedQueue.append(one_task)
 
@@ -329,8 +335,8 @@ def preemptive_scheduling_algorithm(task_list, total_bandwidth):
                         one_task.actual_start_time += 1
                         add_task_to_waiting_queue(one_task)
         except IndexError:
-            current_time += 1  # advance current time
             continue  # No tasks at the current time, move forward
+        current_time += 1  # advance current time
 
     # check if there are lost tasks
     diff_list = compare_lists(task_list, completedQueue)

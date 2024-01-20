@@ -39,17 +39,15 @@ class Task:
         self.__original_bandwidth = bandwidth
         self.__min_bandwidth = min_bandwidth
         self.__created_time = created_time
-        self.__actual_start_time = created_time
         self.__total_duration = duration
         self.__remaining_duration = duration
         self.priority = priority
         self.__score = 0
-        self.__actual_end_time = self.__actual_start_time + self.__total_duration
         self.__duration_changed = False
-        self.__preempted_time = self.__actual_start_time
         self.__task_status = TaskStatus.PENDING
         self.__is_preempted = False
         self.__end_time_changed = False
+        self.__start_end_times_list = []
 
     # get task score
     @property
@@ -116,22 +114,18 @@ class Task:
 
     @property
     def actual_start_time(self):
-        return self.__actual_start_time
-
-    # preempted time
-    @property
-    def preempted_time(self):
-        return self.__preempted_time
-
-    # set preempted time
-    @preempted_time.setter
-    def preempted_time(self, val):
-        self.__preempted_time = val
+        return self.__find_start_time(latest=False)
 
     @actual_start_time.setter
     def actual_start_time(self, val):
-        self.__actual_start_time = val
-        self.__preempted_time = self.__actual_start_time
+        self.__start_end_times_list.append([val,-1])
+
+    def __find_start_time(self, latest=False):
+        if self.__start_end_times_list == []:
+            raise Exception("Task never started")
+        # start_times = [i[0] for i in self.__start_end_times_list]
+        idx = -1 if latest else 0
+        return self.__start_end_times_list[idx][0]
 
     # Get duration of the task
     @property
@@ -142,6 +136,9 @@ class Task:
     @property
     def remaining_duration(self):
         return self.__remaining_duration
+
+    def get_start_end_time_tuples_list(self):
+        return self.__start_end_times_list
 
     # Set remaining duration
     @remaining_duration.setter
@@ -175,14 +172,14 @@ class Task:
     @property
     def actual_end_time(self):
         if not self.__end_time_changed:
-            return self.__actual_start_time + self.__total_duration
-        return self.__actual_end_time
+            return self.actual_start_time + self.__total_duration
+        return self.__start_end_times_list[-1][1]
 
     # set actual end time
     @actual_end_time.setter
     def actual_end_time(self, val):
         self.__end_time_changed = True
-        self.__actual_end_time = val
+        self.__start_end_times_list[-1][1] = val
 
     # compress the task to minimal bandwidth
     def compress(self):
@@ -194,7 +191,7 @@ class Task:
 
     def preempt(self, current_time):
         self.__is_preempted = True
-        self.__preempted_time = current_time + 1
+        self.actual_end_time(current_time)
         self.__task_status = TaskStatus.PENDING
 
     # String representation of the Task object
@@ -226,7 +223,6 @@ class Task:
             'min_bandwidth': self.__min_bandwidth,
             'original_bandwidth': self.__original_bandwidth,
             'created_time': self.__created_time,
-            'actual_start_time': self.__actual_start_time,
             'duration': self.__total_duration,
             'actual_end_time': self.actual_end_time,
             'priority': self.__priority.name,  # Assuming TaskPriority is an Enum
@@ -239,8 +235,5 @@ class Task:
         self.__min_bandwidth = src_dict['min_bandwidth']
         self.__original_bandwidth = src_dict['original_bandwidth']
         self.__created_time = src_dict['created_time']
-        self.__actual_start_time = src_dict['actual_start_time']
-        self.__preempted_time = src_dict['actual_start_time']
         self.__total_duration = self.__remaining_duration = src_dict['duration']
         self.priority = src_dict['priority']
-        self.__actual_end_time = self.__actual_start_time + self.__total_duration

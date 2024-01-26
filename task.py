@@ -47,9 +47,16 @@ class Task:
         self.__actual_end_time = self.__actual_start_time + self.__total_duration
         self.__duration_changed = False
         self.__preempted_time = self.__actual_start_time
+        self.__resumed_time = 0
         self.__task_status = TaskStatus.PENDING
         self.__is_preempted = False
         self.__end_time_changed = False
+        self.__preempt_times = []
+
+    # is task preempted?
+    @property
+    def is_preempted(self) -> bool:
+        return self.__is_preempted
 
     # get task score
     @property
@@ -130,8 +137,11 @@ class Task:
 
     @actual_start_time.setter
     def actual_start_time(self, val):
-        self.__actual_start_time = val
-        self.__preempted_time = self.__actual_start_time
+        if self.is_preempted:
+            self.__resumed_time = val
+        else:
+            self.__actual_start_time = val
+        # self.__preempted_time = self.__actual_start_time
 
     # Get duration of the task
     @property
@@ -176,13 +186,18 @@ class Task:
     def actual_end_time(self):
         if not self.__end_time_changed:
             return self.__actual_start_time + self.__total_duration
+        if self.is_preempted:
+            return self.__preempt_times[-1][1]
         return self.__actual_end_time
 
     # set actual end time
     @actual_end_time.setter
     def actual_end_time(self, val):
         self.__end_time_changed = True
-        self.__actual_end_time = val
+        if not self.is_preempted:
+            self.__actual_end_time = val
+        else:
+            self.__preempt_times.append((self.__resumed_time, val))
 
     # compress the task to minimal bandwidth
     def compress(self):
@@ -193,9 +208,12 @@ class Task:
         self.__bandwidth = self.__original_bandwidth
 
     def preempt(self, current_time):
-        self.__is_preempted = True
         self.__preempted_time = current_time + 1
         self.__task_status = TaskStatus.PENDING
+        start_time = self.__actual_start_time if not self.preempted_time else self.__resumed_time
+        end_time = self.__preempted_time
+        self.__preempt_times.append((start_time, end_time))
+        self.__is_preempted = True
 
     # String representation of the Task object
     def __repr__(self):

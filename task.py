@@ -130,11 +130,6 @@ class Task:
     def preempted_time(self):
         return self.__preempted_time
 
-    # set preempted time
-    @preempted_time.setter
-    def preempted_time(self, val):
-        self.__preempted_time = val
-
     @actual_start_time.setter
     def actual_start_time(self, val):
         if self.is_preempted:

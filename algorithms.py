@@ -104,7 +104,7 @@ def simple_greedy_algorithm(task_list, total_bandwidth):
                 if one_task.bandwidth <= total_bandwidth:
                     add_task_to_processing_queue(one_task)
                 else:
-                    one_task.actual_start_time += 1
+                    one_task.actual_start_time = current_time + 1
                     add_task_to_waiting_queue(one_task)
         except IndexError:
             continue  # No tasks at the current time, move forward

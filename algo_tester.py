@@ -104,7 +104,7 @@ class AlgoTester:
         heatmap_plot.show_plot()
 
 
-def algo_worker(l, algo_fp, algo_name, task_list_type, value_tuple, max_bandwidth, log_file=None):
+def algo_worker(algo_fp, algo_name, task_list_type, value_tuple, max_bandwidth, l=None, log_file=None):
     """
     Worker function that runs algorithms in multiple processes.
     :param log_file: log file to write to, default no log file
@@ -125,7 +125,8 @@ def algo_worker(l, algo_fp, algo_name, task_list_type, value_tuple, max_bandwidt
     date_time = f"Run Time: {now.strftime("%m/%d/%Y, %H:%M:%S")}"
     task_list_str = f"{task_list_type}: {explanation_string}"
     algo_score_str = f"{algo_name} average score for Task List \"{task_list_type}\": {tester.avg_score_per_priority_str()}\n"
-    l.acquire()  # acquire lock for printing
+    if l:
+        l.acquire()  # acquire lock for printing
     # if given log file name, write to log
     if log_file:
         with open(log_file, "a+") as f:
@@ -136,8 +137,9 @@ def algo_worker(l, algo_fp, algo_name, task_list_type, value_tuple, max_bandwidt
     print(task_list_str)
     print(algo_score_str)
     # Uncomment the next line to show heatmap plots if needed
-    # tester.show_heatmap_plot()
-    l.release()  # release lock for printing
+    tester.show_heatmap_plot()
+    if l:
+        l.release()  # release lock for printing
 
 
 def main(log_file=None, clear_log=True):
@@ -162,7 +164,7 @@ def main(log_file=None, clear_log=True):
     # Create a process for each algorithm on each task list
     for algo_fp, algo_name in algo_functions:
         for key, value_tuple in task_lists_dict.items():
-            p = mps.Process(target=algo_worker, args=(lock, algo_fp, algo_name, key, value_tuple, max_bandwidth, log_file,))
+            p = mps.Process(target=algo_worker, args=(algo_fp, algo_name, key, value_tuple, max_bandwidth, lock, log_file,))
             procs.append(p)  # Add the process to the list
     # Start each process
     for p in procs:

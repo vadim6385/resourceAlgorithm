@@ -79,6 +79,11 @@ class TaskHeatmap:
 
 # Example usage
 if __name__ == "__main__":
-    task_matrix = np.array([[1, 2, 3], [4, 5, 6], [7, 8, 9]])
-    heatmap = TaskHeatmap(task_matrix)
-    heatmap.show_plot()
+    from algo_tester import algo_worker
+    from algorithms import greedy_compression_algorithm, simple_greedy_algorithm, preemptive_scheduling_algorithm
+    value_tuple = ("task_list_random.json", "Generated queue of random tasks")
+    key = ""
+    max_bandwidth = 50
+    algo_worker(algo_fp=simple_greedy_algorithm, algo_name="", task_list_type="", value_tuple=value_tuple, max_bandwidth=max_bandwidth)
+
+

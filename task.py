@@ -122,6 +122,8 @@ class Task:
 
     def __find_start_time(self, latest=False):
         if self.__start_end_times_list == []:
+            if self.status == TaskStatus.PENDING:
+                return self.created_time
             raise Exception("Task never started")
         # start_times = [i[0] for i in self.__start_end_times_list]
         idx = -1 if latest else 0
@@ -194,28 +196,6 @@ class Task:
         self.__is_preempted = True
         self.actual_end_time(current_time)
         self.__task_status = TaskStatus.PENDING
-
-    # String representation of the Task object
-    def __repr__(self):
-        return (
-            f"Task("
-            f"id={self.id}, "
-            f"bandwidth={self.bandwidth}, "
-            f"min_bandwidth={self.min_bandwidth}, "
-            f"original_bandwidth={self.original_bandwidth}, "
-            f"created_time={self.created_time}, "
-            f"actual_start_time={self.actual_start_time}, "
-            f"total_duration={self.total_duration}, "
-            f"remaining_duration={self.remaining_duration}, "
-            f"actual_end_time={self.actual_end_time}, "
-            f"priority={self.priority.name}, "
-            f"status={self.status.name}, "
-            f"preempted_time={self.preempted_time}, "
-            f"score={self.score}, "
-            f"is_compressed={self.is_compressed}, "
-            f"bandwidth_diff={self.bandwidth_diff}"
-            f")"
-        )
 
     def to_dict(self):
         return {

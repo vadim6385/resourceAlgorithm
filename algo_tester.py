@@ -31,7 +31,7 @@ class AlgoTester:
         self.time_start = min(one_task.created_time for one_task in self.completed_tasks)
         self.time_end = max(one_task.actual_end_time for one_task in self.completed_tasks)
         self.rate_tasks()  # Calculate the score for each task
-        # self.create_task_matrix()  # Create the task matrix
+        self.create_task_matrix()  # Create the task matrix
 
     def rate_tasks(self):
         """
@@ -75,7 +75,14 @@ class AlgoTester:
         """
         self.task_matrix = np.zeros((self.total_bandwidth, self.time_end + 1), dtype=int)
         for one_task in self.completed_tasks:
+
             for time in range(one_task.actual_start_time, one_task.actual_end_time + 1):
+                if one_task.is_preempted:
+                    for one_tup in one_task.preempted_times_list:
+                        if one_tup[0] <= time <= one_tup[1]:
+                            if all(self.task_matrix[bw:bw + one_task.bandwidth, time] == 0):
+                                self.task_matrix[bw:bw + one_task.bandwidth, time] = one_task.id
+                                break
                 allocated = False
                 for bw in range(self.total_bandwidth):
                     # Check if the bandwidth is available for the task at the given time

@@ -125,10 +125,12 @@ class Task:
     def actual_start_time(self):
         return self.__actual_start_time
 
-    # preempted time
+    # preempted times list
     @property
-    def preempted_time(self):
-        return self.__preempted_time
+    def preempted_times_list(self):
+        if self.is_preempted:
+            return self.__preempt_times
+        raise Exception("Task is not preempted")
 
     @actual_start_time.setter
     def actual_start_time(self, val):
@@ -205,7 +207,7 @@ class Task:
     def preempt(self, current_time):
         self.__preempted_time = current_time + 1
         self.__task_status = TaskStatus.PENDING
-        start_time = self.__actual_start_time if not self.preempted_time else self.__resumed_time
+        start_time = self.__actual_start_time if not self.__preempted_time else self.__resumed_time
         end_time = self.__preempted_time
         self.__preempt_times.append((start_time, end_time))
         self.__is_preempted = True
@@ -225,7 +227,7 @@ class Task:
             f"actual_end_time={self.actual_end_time}, "
             f"priority={self.priority.name}, "
             f"status={self.status.name}, "
-            f"preempted_time={self.preempted_time}, "
+            f"preempted_time={self.__preempted_time}, "
             f"score={self.score}, "
             f"is_compressed={self.is_compressed}, "
             f"bandwidth_diff={self.bandwidth_diff}"

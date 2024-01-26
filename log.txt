@@ -1,48 +1,28 @@
-Run Time: 01/26/2024, 17:10:29
+Run Time: 01/26/2024, 17:30:34
 C: Created chunks of three tasks of same priority, first will be 0.6 of max bandwidth, two more will be exactly half bandwidth
 Greedy compression algorithm average score for Task List "C": Average Score per priority: REGULAR:N/A PREMIUM:N/A ENTERPRISE:9 . Total Start Time: 0, Total End Time: 16705
 
-Run Time: 01/26/2024, 17:10:36
+Run Time: 01/26/2024, 17:30:38
 C: Created chunks of three tasks of same priority, first will be 0.6 of max bandwidth, two more will be exactly half bandwidth
 Simple greedy algorithm average score for Task List "C": Average Score per priority: REGULAR:N/A PREMIUM:N/A ENTERPRISE:905 . Total Start Time: 0, Total End Time: 19356
 
-Run Time: 01/26/2024, 17:10:42
-C: Created chunks of three tasks of same priority, first will be 0.6 of max bandwidth, two more will be exactly half bandwidth
-Preemptive scheduling algorithm average score for Task List "C": Average Score per priority: REGULAR:N/A PREMIUM:N/A ENTERPRISE:564 . Total Start Time: 0, Total End Time: 18109
-
-Run Time: 01/26/2024, 17:10:47
+Run Time: 01/26/2024, 17:30:48
 B: Created tasks as: lowest and premium priority first, enterprise priority second
 Simple greedy algorithm average score for Task List "B": Average Score per priority: REGULAR:3471 PREMIUM:2125 ENTERPRISE:686 . Total Start Time: 0, Total End Time: 6187
 
-Run Time: 01/26/2024, 17:10:49
+Run Time: 01/26/2024, 17:30:50
 B: Created tasks as: lowest and premium priority first, enterprise priority second
 Greedy compression algorithm average score for Task List "B": Average Score per priority: REGULAR:1374 PREMIUM:987 ENTERPRISE:443 . Total Start Time: 0, Total End Time: 3392
 
-Run Time: 01/26/2024, 17:10:53
+Run Time: 01/26/2024, 17:30:56
 A: Created tasks as: lowest priority first, premium priority second, enterprise priority third
 Simple greedy algorithm average score for Task List "A": Average Score per priority: REGULAR:5298 PREMIUM:2927 ENTERPRISE:779 . Total Start Time: 0, Total End Time: 10318
 
-Run Time: 01/26/2024, 17:11:01
+Run Time: 01/26/2024, 17:31:03
 A: Created tasks as: lowest priority first, premium priority second, enterprise priority third
 Greedy compression algorithm average score for Task List "A": Average Score per priority: REGULAR:2308 PREMIUM:1675 ENTERPRISE:847 . Total Start Time: 0, Total End Time: 5902
 
-Run Time: 01/26/2024, 17:11:01
-A: Created tasks as: lowest priority first, premium priority second, enterprise priority third
-Preemptive scheduling algorithm average score for Task List "A": Average Score per priority: REGULAR:1982 PREMIUM:444 ENTERPRISE:148 . Total Start Time: 0, Total End Time: 5085
-
-Run Time: 01/26/2024, 17:11:01
-B: Created tasks as: lowest and premium priority first, enterprise priority second
-Preemptive scheduling algorithm average score for Task List "B": Average Score per priority: REGULAR:1585 PREMIUM:683 ENTERPRISE:195 . Total Start Time: 0, Total End Time: 3362
-
-Run Time: 01/26/2024, 17:11:09
+Run Time: 01/26/2024, 17:31:13
 Random: Generated queue of random tasks
 Simple greedy algorithm average score for Task List "Random": Average Score per priority: REGULAR:9179 PREMIUM:4856 ENTERPRISE:2221 . Total Start Time: 0, Total End Time: 17380
-
-Run Time: 01/26/2024, 17:11:12
-Random: Generated queue of random tasks
-Preemptive scheduling algorithm average score for Task List "Random": Average Score per priority: REGULAR:3154 PREMIUM:748 ENTERPRISE:81 . Total Start Time: 0, Total End Time: 8327
-
-Run Time: 01/26/2024, 17:11:20
-Random: Generated queue of random tasks
-Greedy compression algorithm average score for Task List "Random": Average Score per priority: REGULAR:4258 PREMIUM:3018 ENTERPRISE:1430 . Total Start Time: 0, Total End Time: 9761
 

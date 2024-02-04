@@ -1,12 +1,14 @@
 import json
 import random
+import argparse
 from _operator import attrgetter
 
 from task import TaskPriority, Task
 from utils import DEFAULT_END_TIME, DEBUG_HALT
 
 
-def generate_random_tasks(num_tasks, max_bandwidth, start_time=0, end_time=DEFAULT_END_TIME, set_priority=None, sort_tasks=True):
+def generate_random_tasks(num_tasks, max_bandwidth, start_time=0, end_time=DEFAULT_END_TIME, set_priority=None,
+                          sort_tasks=True):
     """
     generate queue of random tasks
     :param sort_tasks: sort tasks by created time, default True
@@ -127,10 +129,10 @@ def gen_tasks_reg_and_prem_first_ent_last(num_tasks, max_bandwidth, start_time=0
     num_tasks_reg_prio = num_tasks - num_tasks_ent_prio - num_tasks_prem_prio  # Remainder goes to regular priority
 
     # Define time intervals for each priority level tasks.
-    start_time_reg_prem_prio = start_time # Start time for regular and premium priority tasks
-    end_time_reg_prem_prio = int(end_time * (2/len(TaskPriority))) # End time for regular and premium priority tasks
-    start_time_ent_prio = end_time_reg_prem_prio # Start time for enterprise priority tasks after regular and premium tasks
-    end_time_ent_prio = end_time # End time for enterprise priority tasks after regular and premium tasks
+    start_time_reg_prem_prio = start_time  # Start time for regular and premium priority tasks
+    end_time_reg_prem_prio = int(end_time * (2 / len(TaskPriority)))  # End time for regular and premium priority tasks
+    start_time_ent_prio = end_time_reg_prem_prio  # Start time for enterprise priority tasks after regular and premium tasks
+    end_time_ent_prio = end_time  # End time for enterprise priority tasks after regular and premium tasks
 
     # Generate a list of random tasks for each priority type
     # Each list is sorted by some criterion within generate_random_tasks function
@@ -175,7 +177,8 @@ def gen_tasks_high_bandwidth_usage(num_tasks, max_bandwidth, start_time=0,
         # Randomly assign duration and minimum bandwidth for each task
         for i in range(len(task_durations)):
             task_durations[i] = random.randint(1, max_duration)  # Random duration between 1 and max_duration
-            task_min_bandwidths[i] = random.randint(0, task_bandwidths[i])  # Random min bandwidth up to the task's bandwidth
+            task_min_bandwidths[i] = random.randint(0, task_bandwidths[
+                i])  # Random min bandwidth up to the task's bandwidth
         # Create and append each task to the return list with the specified attributes
         for i in range(len(task_durations)):
             new_task = Task(bandwidth=task_bandwidths[i], created_time=task_start_time,
@@ -187,29 +190,69 @@ def gen_tasks_high_bandwidth_usage(num_tasks, max_bandwidth, start_time=0,
     return retlist
 
 
-if __name__ == "__main__":
-    num_tasks = 1000
-    max_bandwidth = 50
-    start_time = 0
-    max_duration = 50
-    end_time = DEFAULT_END_TIME
+# Define a function to parse command line arguments
+def parse_args():
+    """
+    parse cmd line args
+    """
+    parser = argparse.ArgumentParser(description='Process some integers.')
+    parser.add_argument('--num_tasks', type=int, default=1000, help='Number of tasks')
+    parser.add_argument('--max_bandwidth', type=int, default=50, help='Maximum bandwidth')
+    parser.add_argument('--start_time', type=int, default=0, help='Start time')
+    parser.add_argument('--max_duration', type=int, default=50, help='Maximum duration')
+    parser.add_argument('--end_time', type=int, default=DEFAULT_END_TIME, help='End time')
+    parser.add_argument('--random_task_list_file', type=str, default="task_list_random.json",
+                        help='Random task list file')
+    parser.add_argument('--task_list_a_file', type=str, default="task_list_a.json", help='Task list A file')
+    parser.add_argument('--task_list_b_file', type=str, default="task_list_b.json", help='Task list B file')
+    parser.add_argument('--task_list_c_file', type=str, default="task_list_c.json", help='Task list C file')
 
+    return parser.parse_args()
+
+
+def main(num_tasks, max_bandwidth, start_time=0, max_duration=50, end_time=DEFAULT_END_TIME,
+         random_task_list_file="task_list_random.json", task_list_a_file="task_list_a.json",
+         task_list_b_file="task_list_b.json", task_list_c_file="task_list_c.json"):
+    """
+    Generates and exports task lists based on specified parameters, creating four different task list strategies.
+    This function employs different strategies for task prioritization and bandwidth allocation, saving each list to a specified JSON file. The strategies include random task generation, prioritization by task type, and allocation of bandwidth in predefined chunks.
+    :param num_tasks: The number of tasks to generate.
+    :param max_bandwidth: The maximum bandwidth available for tasks.
+    :param start_time: The start time for task generation, defaults to 0.
+    :param max_duration: The maximum duration for high bandwidth usage tasks, defaults to 50.
+    :param end_time: The end time for task generation, defaults to DEFAULT_END_TIME if not specified.
+    :param random_task_list_file: Filename for the randomly generated task list, defaults to "task_list_random.json".
+    :param task_list_a_file: Filename for tasks prioritized with regular and premium first, then enterprise, defaults to "task_list_a.json".
+    :param task_list_b_file: Filename for tasks with regular priority first, premium second, then enterprise, defaults to "task_list_b.json".
+    :param task_list_c_file: Filename for tasks in chunks with high bandwidth usage, defaults to "task_list_c.json".
+    :return: None. Generates four JSON files, each containing a list of tasks based on the specified generation strategy.
+    """
     # generate list of random_tasks
     task_list_random = generate_random_tasks(num_tasks=num_tasks, max_bandwidth=max_bandwidth,
                                              start_time=start_time, end_time=end_time)
-    to_json_file(task_list_random, "task_list_random.json")
+    to_json_file(task_list_random, random_task_list_file)
 
     # generate lots of tasks with regular+premium priority first, then enterprise
     task_list_a = gen_tasks_reg_and_prem_first_ent_last(num_tasks=num_tasks, max_bandwidth=max_bandwidth,
                                                         start_time=start_time, end_time=end_time)
-    to_json_file(task_list_a, "task_list_a.json")
+    to_json_file(task_list_a, task_list_a_file)
 
     # generate lots of tasks with regular priority first, premium priority second, then enterprise
     task_list_b = gen_tasks_lowest_priority_first(num_tasks=num_tasks, max_bandwidth=max_bandwidth,
-                                                        start_time=start_time, end_time=end_time)
-    to_json_file(task_list_b, "task_list_b.json")
+                                                  start_time=start_time, end_time=end_time)
+    to_json_file(task_list_b, task_list_b_file)
 
-    # create chunks of three tasks of same priority, first will be 0.6 of max bandwidth, two more will be exactly half bandwidth
+    # create chunks of three tasks of same priority, first will be 0.6 of max bandwidth, two more will be exactly
+    # half bandwidth
     task_list_c = gen_tasks_high_bandwidth_usage(num_tasks=num_tasks, max_bandwidth=max_bandwidth,
-                                                        start_time=start_time, end_time=end_time, max_duration=max_duration)
-    to_json_file(task_list_c, "task_list_c.json")
+                                                 start_time=start_time, end_time=end_time, max_duration=max_duration)
+    to_json_file(task_list_c, task_list_c_file)
+
+
+if __name__ == "__main__":
+    args = parse_args()  # Call the function to parse command line arguments
+    # Pass the parsed values to the main function
+    main(args.num_tasks, args.max_bandwidth, start_time=args.start_time, max_duration=args.max_duration,
+         end_time=args.end_time, random_task_list_file=args.random_task_list_file,
+         task_list_a_file=args.task_list_a_file, task_list_b_file=args.task_list_b_file,
+         task_list_c_file=args.task_list_c_file)

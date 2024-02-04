@@ -31,7 +31,6 @@ class AlgoTester:
         self.time_start = min(one_task.created_time for one_task in self.completed_tasks)
         self.time_end = max(one_task.actual_end_time for one_task in self.completed_tasks)
         self.rate_tasks()  # Calculate the score for each task
-        # self.create_task_matrix()  # Create the task matrix
 
     def rate_tasks(self):
         """
@@ -93,8 +92,7 @@ class AlgoTester:
         """
         Show a heatmap plot of the task matrix.
         """
-        if self.task_matrix is None:
-            raise Exception("Plot can be shown only after tasks have been ran")
+        self.create_task_matrix()  # Create the task matrix
         heatmap_plot = TaskHeatmap(task_matrix=self.task_matrix)
         heatmap_plot.show_plot()
 

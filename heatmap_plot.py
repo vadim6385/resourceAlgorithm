@@ -79,6 +79,13 @@ class TaskHeatmap:
 
 # Example usage
 if __name__ == "__main__":
-    task_matrix = np.array([[1, 2, 3], [4, 5, 6], [7, 8, 9]])
-    heatmap = TaskHeatmap(task_matrix)
-    heatmap.show_plot()
+    from algorithms import greedy_compression_algorithm
+    from algo_tester import AlgoTester
+    task_list = "task_list_random_50.json"
+    max_bandwidth = 50
+    tester = AlgoTester(task_list_file=task_list, total_bandwidth=max_bandwidth)
+    tester.test(greedy_compression_algorithm)
+    print(tester.avg_score_per_priority_str())
+    tester.show_heatmap_plot()
+
+
